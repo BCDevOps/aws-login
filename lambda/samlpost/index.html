@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Custom AWS SAML Response SignIn Page" />
+    <title>AWS SAML SignIn</title>
+    <link href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" rel="stylesheet" type="text/css" />
+    <style>
+       
+    </style>
+</head>
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.663.0.min.js"></script>
+<script type-"text/javascript">
+
+    let accountInfo = null;
+    let samlResponse = null;
+
+    $(document).ready(function () {
+        console.log("Document Ready");
+
+        samlResponse = $("input[name='SAMLResponse']").first().val();
+
+        const decodedSAMLResponse = atob(samlResponse);
+        
+        accountInfo = parseSAMLResponse(decodedSAMLResponse);
+        
+        renderDialog();
+        renderAccounts(accountInfo);
+        
+    });
+
+    function renderDialog() {
+        $("#content").append('<div id="dialog" title="AWS Credentials"> \
+                <p>Copy and paste the following commands into your shell to set up your AWS CLI environment variables.</p> \
+                <pre style="white-space: pre-wrap;word-wrap: break-word;padding: 1rem;">Loading...</pre> \
+                <button id="copyBtn" type="button" class="click-to-copy">Click to copy</button> \
+                </div>');
+        $("#dialog").dialog({autoOpen: false, width: '600px'});
+    }
+    
+    function renderAccounts(accountInfo) {
+        $.each(accountInfo, function(key, value) {
+            const accordianHeaderHTML = `<h3>${key}</h3>`;
+
+            let table = $("<table>").addClass("account-roles");
+            $.each(value, function(k, v) {
+                
+                let tr = $("<tr>").addClass("account-role")
+                    .append(`<td><span>${v.roleName}</span></td><td><button class="ui-button ui-widget ui-corner-all click-credentials">Click for Credentials</button></td><td><button class="ui-button ui-widget ui-corner-all click-console">Login to Console</button></td>`)
+          
+                tr.data(v);
+
+                table.append(tr);
+            });
+          
+            let div = $("<div>").append(table);
+            $("#awsaccounts").append(accordianHeaderHTML).append(div);
+          
+        });
+
+        $("#awsaccounts").accordion()
+
+        $("button.click-credentials").click(function() {            
+            let data = $(this).parents("tr.account-role").first().data();
+            getSTSCredentials(data);
+        });
+
+        $("button.click-console").click(function() {
+            let data = $(this).parents("tr.account-role").first().data();
+            consoleSignIn(data);
+        });
+    }
+
+    function getSTSCredentials(awsAccount) {
+        $("#dialog").dialog("open");
+
+        $("#dialog pre").first().html("Loading...");
+        
+        const providerArn = awsAccount.providerArn;
+        const roleArn = awsAccount.roleArn;
+
+        let sts = new AWS.STS();
+		let params = {
+			DurationSeconds: 3600,
+			PrincipalArn: providerArn,
+			RoleArn: roleArn,
+            SAMLAssertion: samlResponse            
+        };
+                
+        sts.assumeRoleWithSAML(params, function (err, data) {
+			if (err) {
+				console.log(err, err.stack);
+				$('#dialog pre').first().html('Error: ' + err.message);
+			} else {
+
+				let accessKeyId = data.Credentials.AccessKeyId;
+				let secretKey = data.Credentials.SecretAccessKey;
+				let sessionToken = data.Credentials.SessionToken;
+
+				let text = '\
+export AWS_ACCESS_KEY_ID="' + accessKeyId + '" \n\
+export AWS_SECRET_ACCESS_KEY="' + secretKey + '" \n\
+export AWS_SESSION_TOKEN="' + sessionToken + '" \n\
+export AWS_DEFAULT_REGION=ca-central-1 \n';
+
+				$('#dialog pre').first().html(text);
+
+				$('#dialog').on('click', '#copyBtn', function () {
+					let text = $('#dialog pre').text();
+					let $tempInput = $("<textarea>");
+					$("body").append($tempInput);
+					$tempInput.val(text).select();
+					document.execCommand("copy");
+					$tempInput.remove();
+				});
+			}
+		});
+
+    }
+
+    function consoleSignIn(awsAccount) {
+        const providerArn = awsAccount.providerArn;
+        const roleArn = awsAccount.roleArn;
+        const sessionDuration = 3600;
+        
+		let params = {
+			DurationSeconds: sessionDuration,
+			PrincipalArn: providerArn,
+			RoleArn: roleArn,
+            SAMLAssertion: samlResponse            
+        };
+        
+        $.ajax({
+          type: "POST",
+          url: "/test/consolelogin",
+          data: JSON.stringify(params),
+          success: function(data, textStatus, jqXHR){
+            console.log(data);
+            window.location = data.Location;
+          },
+          dataType: "json"
+        });
+                
+    }
+
+    function parseSAMLResponse(samlResponse) {
+        //let capturingRegex = new RegExp(">(?<provider>arn:aws:iam::\\d+:saml-provider/\\S+),(?<role>arn:aws::iam::(?<accountid>\\d+):role/(?<rolename>\\w+))<");
+        let capturingRegex = new RegExp(">(arn:aws:iam::\\d+:saml-provider/\\S+),(arn:aws:iam::(\\d+):role/(\\w+))<", "gi");
+        ///>(arn:aws:iam::\d+:saml-provider\/\S+),(arn:aws:iam::(\d+):role\/(\w+))</gi
+        let matches = samlResponse.matchAll(capturingRegex);
+        
+        awsAccounts = {};
+        for (const match of matches) {
+           
+            awsAccount = {};
+            awsAccount.providerArn = match[1];
+            awsAccount.roleArn = match[2];
+           
+            awsAccount.roleName = match[4];
+            
+            if (awsAccounts[match[3]] == undefined) {
+                awsAccounts[match[3]] = [awsAccount];
+            } else {
+                awsAccounts[match[3]].push(awsAccount);
+            }            
+        }
+
+        return awsAccounts;
+    }
+
+</script>
+
+<body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root">
+
+        <div id="content">
+            <div id="awsaccounts">
+
+            </div>
+        </div>
+
+        <input type="hidden" name="SAMLResponse" value="##SAMLRESPONSE##" />
+
+    </div>
+</body>
+
+</html>
