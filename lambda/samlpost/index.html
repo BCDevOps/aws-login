@@ -7,15 +7,119 @@
     <meta name="theme-color" content="#000000" />
     <meta name="description" content="Custom AWS SAML Response SignIn Page" />
     <title>AWS SAML SignIn</title>
-    <link href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" rel="stylesheet" type="text/css" />
     <style>
-       
+		@font-face {
+			font-family: 'BC Sans';
+			src: url('https://www2.gov.bc.ca/StaticWebResources/static/shared/fonts/BCSans/BCSans-Bold.woff');
+			font-weight: normal;
+			font-style: normal;
+		}
+
+		header {
+			background-color: #036;
+			border-bottom: 2px solid #fcba19;
+			padding: 0 65px 0 65px;
+			color: #fff;
+			display: flex;
+			height: 65px;
+			/*top: 0px;*/
+			/*position: fixed;*/
+			width: 100%;
+		}
+
+		header h1 {
+			font-family: ‘BC Sans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
+			font-weight: normal;  /* 400 */
+			margin: 5px 5px 0 18px;
+			visibility: hidden;
+		}
+
+		header .banner {
+			display: flex;
+			justify-content: flex-start;
+			align-items: center;
+			margin: 0 10px 0 0;
+			/* border-style: dotted;
+			border-width: 1px;
+			border-color: lightgrey; */
+		}
+
+		header .other {
+			display: flex;
+			flex-grow: 1;
+			/* border-style: dotted;
+			border-width: 1px;
+			border-color: lightgrey; */
+		}
+
+		footer {
+			background-color: #036;
+			border-top: 2px solid #fcba19;
+			color: #fff;
+			font-family: ‘BCSans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
+			position: fixed;
+			bottom: 0;
+			width: 100%;
+		}
+
+		footer .container {
+			display: flex;
+			justify-content: center;
+			flex-direction: column;
+			text-align: center;
+			height: 46px;
+		}
+
+		footer ul {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+			margin: 0;
+			color: #fff;
+			list-style: none;
+			align-items: center;
+			height: 100%;
+		}
+
+		footer ul li a {
+			font-size: 0.813em;
+			font-weight: normal;  /* 400 */
+			color: #fff;
+			border-right: 1px solid #4b5e7e;
+			padding-left: 5px;
+			padding-right: 5px;
+		}
+
+		a:hover {
+			color: #fff;
+			text-decoration: underline;
+		}
+
+		:focus {
+			outline: 4px solid #3B99FC;
+			outline-offset: 1px;
+		}
+
+		@media screen and (min-width: 600px) and (max-width: 899px) {
+			header h1 {
+				font-size: calc(7px + 2.2vw);
+				visibility: visible;
+			}
+		}
+
+		@media screen and (min-width: 900px) {
+			header h1 {
+				font-size: 2.0em;
+				visibility: visible;
+			}
+		}
     </style>
+	<link href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" rel="stylesheet" type="text/css" />
 </head>
 <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script src="https://sdk.amazonaws.com/js/aws-sdk-2.663.0.min.js"></script>
-<script type-"text/javascript">
+<script type="text/javascript">
 
     let accountInfo = null;
     let samlResponse = null;
@@ -26,12 +130,12 @@
         samlResponse = $("input[name='SAMLResponse']").first().val();
 
         const decodedSAMLResponse = atob(samlResponse);
-        
+
         accountInfo = parseSAMLResponse(decodedSAMLResponse);
-        
+
         renderDialog();
         renderAccounts(accountInfo);
-        
+
     });
 
     function renderDialog() {
@@ -42,30 +146,30 @@
                 </div>');
         $("#dialog").dialog({autoOpen: false, width: '600px'});
     }
-    
+
     function renderAccounts(accountInfo) {
         $.each(accountInfo, function(key, value) {
             const accordianHeaderHTML = `<h3>${key}</h3>`;
 
             let table = $("<table>").addClass("account-roles");
             $.each(value, function(k, v) {
-                
+
                 let tr = $("<tr>").addClass("account-role")
                     .append(`<td><span>${v.roleName}</span></td><td><button class="ui-button ui-widget ui-corner-all click-credentials">Click for Credentials</button></td><td><button class="ui-button ui-widget ui-corner-all click-console">Login to Console</button></td>`)
-          
+
                 tr.data(v);
 
                 table.append(tr);
             });
-          
+
             let div = $("<div>").append(table);
             $("#awsaccounts").append(accordianHeaderHTML).append(div);
-          
+
         });
 
         $("#awsaccounts").accordion()
 
-        $("button.click-credentials").click(function() {            
+        $("button.click-credentials").click(function() {
             let data = $(this).parents("tr.account-role").first().data();
             getSTSCredentials(data);
         });
@@ -80,7 +184,7 @@
         $("#dialog").dialog("open");
 
         $("#dialog pre").first().html("Loading...");
-        
+
         const providerArn = awsAccount.providerArn;
         const roleArn = awsAccount.roleArn;
 
@@ -89,9 +193,9 @@
 			DurationSeconds: 3600,
 			PrincipalArn: providerArn,
 			RoleArn: roleArn,
-            SAMLAssertion: samlResponse            
+            SAMLAssertion: samlResponse
         };
-                
+
         sts.assumeRoleWithSAML(params, function (err, data) {
 			if (err) {
 				console.log(err, err.stack);
@@ -127,14 +231,14 @@ export AWS_DEFAULT_REGION=ca-central-1 \n';
         const providerArn = awsAccount.providerArn;
         const roleArn = awsAccount.roleArn;
         const sessionDuration = 3600;
-        
+
 		let params = {
 			DurationSeconds: sessionDuration,
 			PrincipalArn: providerArn,
 			RoleArn: roleArn,
-            SAMLAssertion: samlResponse            
+            SAMLAssertion: samlResponse
         };
-        
+
         $.ajax({
           type: "POST",
           url: "/test/consolelogin",
@@ -145,7 +249,7 @@ export AWS_DEFAULT_REGION=ca-central-1 \n';
           },
           dataType: "json"
         });
-                
+
     }
 
     function parseSAMLResponse(samlResponse) {
@@ -153,21 +257,21 @@ export AWS_DEFAULT_REGION=ca-central-1 \n';
         let capturingRegex = new RegExp(">(arn:aws:iam::\\d+:saml-provider/\\S+),(arn:aws:iam::(\\d+):role/(\\w+))<", "gi");
         ///>(arn:aws:iam::\d+:saml-provider\/\S+),(arn:aws:iam::(\d+):role\/(\w+))</gi
         let matches = samlResponse.matchAll(capturingRegex);
-        
+
         awsAccounts = {};
         for (const match of matches) {
-           
+
             awsAccount = {};
             awsAccount.providerArn = match[1];
             awsAccount.roleArn = match[2];
-           
+
             awsAccount.roleName = match[4];
-            
+
             if (awsAccounts[match[3]] == undefined) {
                 awsAccounts[match[3]] = [awsAccount];
             } else {
                 awsAccounts[match[3]].push(awsAccount);
-            }            
+            }
         }
 
         return awsAccounts;
@@ -177,16 +281,35 @@ export AWS_DEFAULT_REGION=ca-central-1 \n';
 
 <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root">
 
+    <div id="root">
+		<header>
+			<div class="banner">
+				<img src="https://www2.gov.bc.ca/assets/download/6124280C12B44DA492667E23E8BC38BF" alt="Branding logo"/>
+				<h1>BC Gov AWS Login</h1>
+			</div>
+		</header>
         <div id="content">
+
             <div id="awsaccounts">
 
             </div>
         </div>
 
-        <input type="hidden" name="SAMLResponse" value="##SAMLRESPONSE##" />
+		<input type="hidden" name="SAMLResponse" value="##SAMLRESPONSE##" />
 
+		<footer class="footer">
+			<div class="container">
+				<ul>
+					<li><a href=".">Home</a></li>
+					<li><a href=".">Disclaimer</a></li>
+					<li><a href=".">Privacy</a></li>
+					<li><a href=".">Accessibility</a></li>
+					<li><a href=".">Copyright</a></li>
+					<li><a href=".">Contact Us</a></li>
+				</ul>
+			</div>
+		</footer>
     </div>
 </body>
 
