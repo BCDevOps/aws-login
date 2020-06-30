@@ -32,18 +32,14 @@ exports.handler = function (event, context, callback) {
                 "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
             },
             body: html
-        }
-
-        console.log(event);
+        }        
 
         callback(null, response)
     }
     else if (event.path == "/consolelogin" && event.httpMethod == "POST") {
 
         if (event.body) {
-
-            console.log(event.body);
-
+            
             let body = JSON.parse(event.body)
 
             let principalArn = body.PrincipalArn;
@@ -96,15 +92,13 @@ exports.handler = function (event, context, callback) {
                         // The whole response has been received. Print out the result.
                         resp.on('end', () => {
                             const signInToken = JSON.parse(data).SigninToken;
-                            console.log(signInToken);
+                            
                             requestParams = "?Action=login";
                             requestParams += `&Issuer=${issuer}`;
                             requestParams += `&Destination=https://console.aws.amazon.com/`;
                             requestParams += `&SigninToken=${signInToken}`
 
-                            requestUrl = "https://signin.aws.amazon.com/federation" + requestParams;
-
-                            console.log(requestUrl);
+                            requestUrl = "https://signin.aws.amazon.com/federation" + requestParams;                            
 
                             var response = {
                                 statusCode: 200,
