@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters: 
+  IDP:
+    Type: String
+  CustomAud:
+    Type: String
+
+Resources:
+  SAMLOrganizationsReadRole:
+    Type: AWS::IAM::Role
+    Properties:      
+      RoleName: "BCGOV_SAML_Organizations_Read_Role" #The value is referenced in the terraform
+      MaxSessionDuration: 3600
+      Path: /      
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+            - sts:AssumeRoleWithSAML
+            Effect: Allow
+            Principal:
+              Federated: 
+              - !Ref IDP
+            Condition:
+              StringEquals:
+                SAML:aud: 
+                  - https://signin.aws.amazon.com/saml
+                  - !Ref CustomAud
+      Policies:
+        - PolicyName: saml_user_account_readpolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - organizations:ListTagsForResource
+                  - organizations:DescribeAccount
+                Resource: "*"
+                    
+Outputs:
+  RoleArn:
+    Description: Role ARN
+    Value: !GetAtt SAMLOrganizationsReadRole.Arn
+  
