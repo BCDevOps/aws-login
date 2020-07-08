@@ -10,4 +10,5 @@ locals {
     Environment = "Development"
   }
    
+  saml_read_role_name = "BCGOV_SAML_Organizations_Read_Role" # This is referenced in the master_account_read_role.yaml
 }

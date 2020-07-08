@@ -23,11 +23,15 @@ cd lambda/samlpost
 zip ../../builds/lambda_samlpost.zip index.js index.html
 ```
 
-1. Execute Terraform against target accoun
+2. Execute Terraform against target account
 Deploy the Terraform to AWS. 
 
-1.  Update Roles' Trust Permissions
+3.  Update Roles' Trust Permissions
 - Update all Roles' Trust Permission to include an addition SAML:aud value. This value should be the URL endpoint output from the previous step.
+
+4. [Optional] Deploy the ``master_account_read_role.yaml`` CloudFormation Stack into the **master account**. This will enable the ability to have metadata pulled and displayed with the account listings.
+
+    - This step deploys a Role that allows users read access to AWS Organizations to pull account names and metadata tags. Users will need to be assigned this role in the IdP to allow access to this data.
 
 
 ## Getting Help or Reporting an Issue
