@@ -10,6 +10,12 @@ resource "aws_lambda_function" "samlpost" {
 
   role = aws_iam_role.lambda_exec.arn
 
+   environment {
+    variables = {
+      samlReadRole = "arn:aws:iam::${var.master_account_id}:saml-provider/${var.keycloak_saml_name},arn:aws:iam::${var.master_account_id}:role/${local.saml_read_role_name}"      
+    }
+  }
+
   tags = local.common_tags  
 }
 
@@ -55,4 +61,3 @@ resource "aws_lambda_permission" "apigw" {
   # within the API Gateway REST API.
   source_arn = "${aws_api_gateway_rest_api.samlpost.execution_arn}/*/*"
 }
-
