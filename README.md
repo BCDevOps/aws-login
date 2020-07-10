@@ -15,24 +15,36 @@ This login page is only going to be useful if you have a one or more AWS account
 
 # Build Steps
 
-1. Package Lambda (Skip if no changes to lambda or static html code)
-- Zip up the two files into `lambda_samlpost.zip` and store in the `builds\` folder.
-Example: 
-```
-cd lambda/samlpost
-zip ../../builds/lambda_samlpost.zip index.js index.html
+1. Package (zip) Lambda files using `make`:
+```shell script
+make package-lambda 
 ```
 
-2. Execute Terraform against target account
-Deploy the Terraform to AWS. 
+2. Get credentials for target AWS account and apply to current shell. 
 
-3.  Update Roles' Trust Permissions
+3. Execute Terraform against target account using `make':
+
+```shell script
+make deploy
+```
+
+> _Note_: you will be prompted for the value of the master account. Enter when prompted. You will also be prompted to confirm the `apply` command. Type "yes" when prompted.
+
+4.  Update Roles' Trust Permissions
 - Update all Roles' Trust Permission to include an addition SAML:aud value. This value should be the URL endpoint output from the previous step.
+- Note: This may be done as part of landing zone code.
 
-4. [Optional] Deploy the ``master_account_read_role.yaml`` CloudFormation Stack into the **master account**. This will enable the ability to have metadata pulled and displayed with the account listings.
+5. [Optional] Deploy the ``master_account_read_role.yaml`` CloudFormation Stack into the **master account**. This will enable the ability to have metadata pulled and displayed with the account listings.
 
-    - This step deploys a Role that allows users read access to AWS Organizations to pull account names and metadata tags. Users will need to be assigned this role in the IdP to allow access to this data.
+    - This step deploys a Role that allows users read access to AWS Organizations to pull account names and metadata tags. 
+    
+```shell script
+ make add-org-read-role  MASTER_ACCOUNT_ID=<MASTER_ACCOUNT_ID> CUSTOM_AUD=<URL OUTPUT FROM DEPLOY STEP>
+```
 
+6. [Optional] Assign org read role ro users within the IdP (e.g. KeyCloak) to allow access account metadata.
+
+This can be done manually, or - preferably - using automation via Terraform.  The form of the role to assign in the IdP will likely be be `<IDP_ARN>,<ROLE_ARN>`.
 
 ## Getting Help or Reporting an Issue
 

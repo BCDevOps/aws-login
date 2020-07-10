@@ -1,9 +1,9 @@
 
 resource "aws_lambda_function" "samlpost" {
   function_name = "SAMLPostExample"
-  filename      = "../../builds/lambda_samlpost.zip"
-  
-  source_code_hash = filebase64sha256("../../builds/lambda_samlpost.zip")
+  filename      = "../../dist/lambda_samlpost.zip"
+
+  source_code_hash = filebase64sha256("../../dist/lambda_samlpost.zip")
 
   handler = "index.handler"
   runtime = "nodejs12.x"
@@ -12,11 +12,11 @@ resource "aws_lambda_function" "samlpost" {
 
    environment {
     variables = {
-      samlReadRole = "arn:aws:iam::${var.master_account_id}:saml-provider/${var.keycloak_saml_name},arn:aws:iam::${var.master_account_id}:role/${local.saml_read_role_name}"      
+      samlReadRole = "arn:aws:iam::${var.master_account_id}:saml-provider/${var.keycloak_saml_name},arn:aws:iam::${var.master_account_id}:role/${local.saml_read_role_name}"
     }
   }
 
-  tags = local.common_tags  
+  tags = local.common_tags
 }
 
 resource "aws_iam_role" "lambda_exec" {
@@ -30,13 +30,13 @@ resource "aws_iam_role" "lambda_exec" {
        "Principal": {
          "Service": "lambda.amazonaws.com"
        },
-       "Effect": "Allow"      
+       "Effect": "Allow"
      }
    ]
  }
  EOF
 
- tags = local.common_tags  
+ tags = local.common_tags
 }
 
 
