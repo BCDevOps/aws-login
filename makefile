@@ -21,6 +21,7 @@ endif
 deploy: $(lamba_samlpost.zip) check_aws_login
 	@echo "Deploying app to AWS."
 	@cd terraform/aws && terraform apply
+	
 
 add-org-read-role: check_aws_login
 ifeq ($(MASTER_ACCOUNT_ID),)
@@ -29,8 +30,11 @@ endif
 ifeq ($(CUSTOM_AUD),)
 	$(error CUSTOM_AUD is not set)
 endif
-	@aws cloudformation deploy --template-file master_account_read_role.yaml --stack-name saml-read-role --parameter-overrides IDP=arn:aws:iam::$(MASTER_ACCOUNT_ID):saml-provider/BCGovKeyCloak CustomAud=$(CUSTOM_AUD) --capabilities CAPABILITY_NAMED_IAM
+ifeq ($(LAMBDA_ARN),)
+	$(error LAMBDA_ARN is not set)
+endif
 
+	@aws cloudformation deploy --template-file master_account_read_role.yaml --stack-name saml-read-role --parameter-overrides IDP=arn:aws:iam::$(MASTER_ACCOUNT_ID):saml-provider/BCGovKeyCloak CustomAud=$(CUSTOM_AUD) LambdaArn=$(LAMBDA_ARN) --capabilities CAPABILITY_NAMED_IAM --tags Project="SAML Login Provider" Environment="Development"
 clean:
 	-@rm -rf dist
 

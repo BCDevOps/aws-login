@@ -73,50 +73,70 @@ exports.handler = function (event, context, callback) {
 
                     callback(null, response);
                 } else {
-                    let organizations = new AWS.Organizations({
-                        accessKeyId: data.Credentials.AccessKeyId,
-                        secretAccessKey: data.Credentials.SecretAccessKey,
-                        sessionToken: data.Credentials.SessionToken,
-                        region: "us-east-1"});
-
-                    var getTagsForAccounts = function getTagsForAccounts(accountData, orgClient) {
-                        return Promise.all(Object.keys(accountData).map(function(account) {
-                             return new Promise((resolve, reject) => {
-                                 organizations.listTagsForResource({ResourceId: account}, function (err, data){
-                                     if (err) {
-                                         reject(err);
-                                     }
-                                    let accountTags = {};
-                                    accountTags.accountId = account;
-                                    accountTags.tags = data.Tags;
-                                    organizations.describeAccount({AccountId: account}, function (e, d) {
-                                        if (e) {
-                                            console.log(e);
-                                            reject(e);
-                                        }
-
-                                       accountTags.accountName = d.Account.Name;
-                                       resolve(accountTags);
-                                    });
-                                 });
-                             });
-                        }))
-                    };
-
-                    getTagsForAccounts(accounts, organizations)
-                        .then((values) =>{
-                            let returnVal = {};
-                            for (const val of values) {
-                                returnVal[val.accountId] = val;
-                            }
-
-                             var response = {
-                                statusCode: 200,
-                                body: JSON.stringify(returnVal)
+                   
+                    sts.assumeRole({
+                       RoleArn: process.env.lambdaReadRole,
+                       RoleSessionName: "SAMLSignInLambdaReadOrgs"
+                    }, function(errAssume, dataAssume) {
+                                
+                        if (errAssume) {
+                            console.log(errAssume, errAssume.stack);
+                            var response = {
+                                statusCode: 500,
+                                body: JSON.stringify(errAssume)
                             };
-
+        
                             callback(null, response);
-                        });
+                            return;
+                        }
+                        
+                    
+                        let organizations = new AWS.Organizations({
+                            accessKeyId: dataAssume.Credentials.AccessKeyId,
+                            secretAccessKey: dataAssume.Credentials.SecretAccessKey,
+                            sessionToken: dataAssume.Credentials.SessionToken,
+                            region: "us-east-1"});
+    
+                        var getTagsForAccounts = function getTagsForAccounts(accountData, orgClient) {
+                            return Promise.all(Object.keys(accountData).map(function(account) {
+                                 return new Promise((resolve, reject) => {
+                                     organizations.listTagsForResource({ResourceId: account}, function (err, tagData){
+                                         if (err) {
+                                             reject(err);
+                                         }
+                                        let accountTags = {};
+                                        accountTags.accountId = account;
+                                        accountTags.tags = tagData.Tags;
+                                        organizations.describeAccount({AccountId: account}, function (e, d) {
+                                            if (e) {
+                                                console.log(e);
+                                                reject(e);
+                                            }
+    
+                                           accountTags.accountName = d.Account.Name;
+                                           resolve(accountTags);
+                                        });
+                                     });
+                                 });
+                            }))
+                        };
+    
+                        getTagsForAccounts(accounts, organizations)
+                            .then((values) =>{
+                                let returnVal = {};
+                                for (const val of values) {
+                                    returnVal[val.accountId] = val;
+                                }
+    
+                                 var response = {
+                                    statusCode: 200,
+                                    body: JSON.stringify(returnVal)
+                                };
+    
+                                callback(null, response);
+                            });
+                            
+                    });
                 }
 
             });

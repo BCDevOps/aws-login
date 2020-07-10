@@ -5,6 +5,8 @@ Parameters:
     Type: String
   CustomAud:
     Type: String
+  LambdaArn:
+    Type: String
 
 Resources:
   SAMLOrganizationsReadRole:
@@ -26,6 +28,27 @@ Resources:
                 SAML:aud: 
                   - https://signin.aws.amazon.com/saml
                   - !Ref CustomAud
+      Policies:
+        - PolicyName: deny_all
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Deny
+                Action: "*"
+                Resource: "*"
+  SAMLLambdaOrganizationsReadRole:
+    Type: AWS::IAM::Role
+    Properties:      
+      RoleName: "BCGOV_Lambda_Organizations_Read_Role" #The value is referenced in the terraform
+      MaxSessionDuration: 3600
+      Path: /      
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+            - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS: !Ref LambdaArn
       Policies:
         - PolicyName: saml_user_account_readpolicy
           PolicyDocument:

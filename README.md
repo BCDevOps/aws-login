@@ -39,7 +39,8 @@ make deploy
     - This step deploys a Role that allows users read access to AWS Organizations to pull account names and metadata tags. 
     
 ```shell script
- make add-org-read-role  MASTER_ACCOUNT_ID=<MASTER_ACCOUNT_ID> CUSTOM_AUD=<URL OUTPUT FROM DEPLOY STEP>
+
+ make add-org-read-role  MASTER_ACCOUNT_ID=`terraform output -state=terraform/aws/terraform.tfstate master_account` CUSTOM_AUD=`terraform output -state=terraform/aws/terraform.tfstate base_url` LAMBDA_ARN=`terraform output -state=terraform/aws/terraform.tfstate lambda_role_arn`
 ```
 
 6. [Optional] Assign org read role ro users within the IdP (e.g. KeyCloak) to allow access account metadata.
