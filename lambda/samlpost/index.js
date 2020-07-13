@@ -182,7 +182,7 @@ exports.handler = function (event, context, callback) {
 
                             requestParams = "?Action=login";
                             requestParams += `&Issuer=${issuer}`;
-                            requestParams += `&Destination=https://console.aws.amazon.com/`;
+                            requestParams += `&Destination=https://console.aws.amazon.com/?region=ca-central-1`;
                             requestParams += `&SigninToken=${signInToken}`
 
                             requestUrl = "https://signin.aws.amazon.com/federation" + requestParams;
