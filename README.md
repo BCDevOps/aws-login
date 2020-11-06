@@ -20,7 +20,7 @@ This login page is only going to be useful if you have a one or more AWS account
 make package-lambda 
 ```
 
-2. Get credentials for target AWS account and apply to current shell. 
+2. Get credentials for target AWS account and apply to current shell. (Note: [this](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-role.html#cli-configure-role-xaccount) might be helpful if you want to use an IAM user from the master account + cross-account role.
 
 3. Execute Terraform against target account using `make':
 

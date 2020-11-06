@@ -1,6 +1,6 @@
 
 resource "aws_lambda_function" "samlpost" {
-  function_name = "SAMLPostExample"
+  function_name = "SAMLPostExample-${var.resource_name_suffix}"
   filename      = "../../dist/lambda_samlpost.zip"
 
   source_code_hash = filebase64sha256("../../dist/lambda_samlpost.zip")
@@ -20,7 +20,7 @@ resource "aws_lambda_function" "samlpost" {
 }
 
 resource "aws_iam_role" "lambda_exec" {
-  name               = "serverless_saml_lambda"
+  name               = "serverless_saml_lambda-${var.resource_name_suffix}"
   assume_role_policy = <<EOF
 {
    "Version": "2012-10-17",
