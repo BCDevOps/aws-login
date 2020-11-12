@@ -5,8 +5,14 @@ locals {
 resource "aws_cloudfront_distribution" "geofencing" {
   depends_on = [aws_api_gateway_deployment.samlpost]
   origin {
+	  custom_origin_config {
+		  http_port = 80
+		  https_port = 443
+		  origin_protocol_policy = "https-only"
+		  origin_ssl_protocols = ["TLSv1.2"]
+	  }
     #regex("^(?:(?P<scheme>[^:/?#]+):)?(?://(?P<authority>[^/?#]*))?", "${aws_api_gateway_deployment.samlpost.stage_name}")
-    domain_name = trimsuffix(trimprefix(aws_api_gateway_deployment.samlpost.stage_name, "https://"), "/${aws_api_gateway_deployment.samlpost.stage_name}")
+    domain_name = trimsuffix(trimprefix(aws_api_gateway_deployment.samlpost.invoke_url, "https://"), "/${aws_api_gateway_deployment.samlpost.stage_name}")
     origin_id   = local.cf_origin_id
 
   }
@@ -14,19 +20,19 @@ resource "aws_cloudfront_distribution" "geofencing" {
   enabled             = true
   is_ipv6_enabled     = true
   comment             = "geofencing"
-  default_root_object = ""
 
-  logging_config {
-    include_cookies = false
-    bucket          = "<mylogs>.s3.amazonaws.com"
-    prefix          = "geofencing"
-  }
-
-  aliases = [""]
+//	logging should probably be in a central location (centralized-logging account?) - in an aggregated/shared bucket and perhaps also in an account-owned bucket
+//	prefix should follw SEA convention like <account>/<region>/<service name> eg. 12345678/ca-central-1/cloudfront
+//
+//  logging_config {
+//    include_cookies = false
+//    bucket          = "<mylogs>.s3.amazonaws.com"
+//    prefix          = "geofencing"
+//  }
 
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods   = []
+	  cached_methods   = ["GET", "HEAD"]
     target_origin_id = local.cf_origin_id
 
     forwarded_values {
@@ -52,11 +58,13 @@ resource "aws_cloudfront_distribution" "geofencing" {
     }
   }
 
-  tags = {
-    Environment = locals.Environment
-  }
+	tags = local.common_tags
 
   viewer_certificate {
     cloudfront_default_certificate = true
   }
+}
+
+output "cloudfront_url" {
+	value = "https://${aws_cloudfront_distribution.geofencing.domain_name}/${aws_api_gateway_deployment.samlpost.stage_name}"
 }
