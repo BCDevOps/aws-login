@@ -18,7 +18,7 @@ resource "aws_cloudfront_distribution" "geofencing" {
 
   logging_config {
     include_cookies = false
-    bucket          = "temp-cloudfront-standard-logs.s3.amazonaws.com"
+    bucket          = "<mylogs>.s3.amazonaws.com"
     prefix          = "geofencing"
   }
 
