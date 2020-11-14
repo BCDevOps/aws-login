@@ -11,7 +11,7 @@ resource "aws_cloudfront_distribution" "geofencing" {
 		  origin_protocol_policy = "https-only"
 		  origin_ssl_protocols = ["TLSv1.2"]
 	  }
-    #regex("^(?:(?P<scheme>[^:/?#]+):)?(?://(?P<authority>[^/?#]*))?", "${aws_api_gateway_deployment.samlpost.stage_name}")
+
     domain_name = trimsuffix(trimprefix(aws_api_gateway_deployment.samlpost.invoke_url, "https://"), "/${aws_api_gateway_deployment.samlpost.stage_name}")
     origin_id   = local.cf_origin_id
 
@@ -21,8 +21,8 @@ resource "aws_cloudfront_distribution" "geofencing" {
   is_ipv6_enabled     = true
   comment             = "geofencing"
 
-//	logging should probably be in a central location (centralized-logging account?) - in an aggregated/shared bucket and perhaps also in an account-owned bucket
-//	prefix should follw SEA convention like <account>/<region>/<service name> eg. 12345678/ca-central-1/cloudfront
+//	- logging should probably be in a central location (centralized-logging account?) - in an aggregated/shared bucket and perhaps also synced into a bucket within the account where the aws-login app is deployed
+//	- prefix should follow SEA convention like <account>/<region>/<service name> eg. 12345678/ca-central-1/cloudfront
 //
 //  logging_config {
 //    include_cookies = false
