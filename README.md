@@ -20,15 +20,19 @@ This login page is only going to be useful if you have a one or more AWS account
 make package-lambda 
 ```
 
-2. Get credentials for target AWS account and apply to current shell. (Note: [this](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-role.html#cli-configure-role-xaccount) might be helpful if you want to use an IAM user from the master account + cross-account role.
+2. Get credentials for target AWS account and apply to current shell (or use AWS profile, etc.). (Note: [this](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-role.html#cli-configure-role-xaccount) might be helpful if you want to use an IAM user from the master account + cross-account role.
 
-3. Execute Terraform against target account using `make':
+3. Execute Terraform against target account:
 
 ```shell script
-make deploy
+cd terraform/aws
+terraform plan
+terraform apply -var="master_account_id=<master account ID> -var="resource_name_suffix=<mysuffix>" -var="keycloak_saml_name=<idp name>"
 ```
 
-> _Note_: you will be prompted for the value of the master account. Enter when prompted. You will also be prompted to confirm the `apply` command. Type "yes" when prompted.
+> Example: terraform apply -var="master_account_id=12345678" -var="resource_name_suffix=prod" -var="keycloak_saml_name=BCGovKeyCloak-xyz123"
+
+> _Note_:  You will also be prompted to confirm the `apply` command. Type "yes" when prompted.
 
 4.  Update Roles' Trust Permissions
 - Update all Roles' Trust Permission to include an addition SAML:aud value. This value should be the URL endpoint output from the previous step.
@@ -39,7 +43,7 @@ make deploy
     - This step deploys a Role that allows users read access to AWS Organizations to pull account names and metadata tags. 
     
 ```shell script
- make add-org-read-role  MASTER_ACCOUNT_ID=<MASTER_ACCOUNT_ID> CUSTOM_AUD=<URL OUTPUT FROM DEPLOY STEP>
+ make add-org-read-role  MASTER_ACCOUNT_ID=<MASTER_ACCOUNT_ID> CUSTOM_AUD=<URL OUTPUT FROM DEPLOY STEP> IDP_NAME=<same value as `keycloak_saml_name` used in Terraform>
 ```
 
 6. [Optional] Assign org read role ro users within the IdP (e.g. KeyCloak) to allow access account metadata.

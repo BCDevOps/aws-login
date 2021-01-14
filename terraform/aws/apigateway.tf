@@ -2,7 +2,7 @@ resource "aws_api_gateway_rest_api" "samlpost" {
   name        = "SAMLPostExample"
   description = "Terraform Serverless Application Example"
 
-  tags = local.common_tags  
+  tags = local.common_tags
 }
 
 resource "aws_api_gateway_resource" "proxy" {
@@ -52,6 +52,7 @@ resource "aws_api_gateway_deployment" "samlpost" {
    ]
 
    rest_api_id = aws_api_gateway_rest_api.samlpost.id
+//	@todo change value below to something like "saml"
    stage_name  = "test"
 }
 

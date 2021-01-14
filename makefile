@@ -29,7 +29,10 @@ endif
 ifeq ($(CUSTOM_AUD),)
 	$(error CUSTOM_AUD is not set)
 endif
-	@aws cloudformation deploy --template-file master_account_read_role.yaml --stack-name saml-read-role --parameter-overrides IDP=arn:aws:iam::$(MASTER_ACCOUNT_ID):saml-provider/BCGovKeyCloak CustomAud=$(CUSTOM_AUD) --capabilities CAPABILITY_NAMED_IAM
+ifeq ($(IDP_NAME),)
+	$(error IDP_NAME is not set)
+endif
+	@aws cloudformation deploy --template-file master_account_read_role.yaml --stack-name saml-read-role --parameter-overrides IDP=arn:aws:iam::$(MASTER_ACCOUNT_ID):saml-provider/$(IDP_NAME) CustomAud=$(CUSTOM_AUD) --capabilities CAPABILITY_NAMED_IAM
 
 clean:
 	-@rm -rf dist
