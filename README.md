@@ -20,7 +20,6 @@ This login page is only going to be useful if you have a one or more AWS account
 2. Execute Terraform against target account:
 
 ```shell script
-cd terraform/aws
 terraform plan
 terraform apply -var="resource_name_suffix=<mysuffix>" -var="keycloak_saml_name=<idp name>"
 ```
