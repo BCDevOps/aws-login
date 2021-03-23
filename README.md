@@ -29,8 +29,11 @@ terraform apply -var="resource_name_suffix=<mysuffix>" -var="keycloak_saml_name=
 > _Note_:  You will also be prompted to confirm the `apply` command. Type "yes" when prompted.
 
 3.  Update Roles' Trust Permissions
-- Update all Roles' Trust Permission to include an addition SAML:aud value. This value should be the URL endpoint output from the previous step.
-- Note: This may be done as part of landing zone code.
+- Update all Trust Permission for all Roles across all landing zone accounts to an additional SAML:aud value. This value should be the URL endpoint output from the previous step (`base_url`).
+
+> Note: This should be done as part of landing zone automation code, rather than manually.
+
+> Note: if "geo restrictions" are desired, the value usef the SAML:aud should be the output `cloudfront_url` rather than `base_url`.
 
 4. [Optional] Assign org read role ro users within the IdP (e.g. KeyCloak) to allow access to account metadata, and display of it on the login page. 
 
