@@ -1,64 +1,78 @@
 resource "aws_api_gateway_rest_api" "samlpost" {
-  name        = "SAMLPostExample"
-  description = "Terraform Serverless Application Example"
+	provider = aws.iam-security-account
 
-  tags = local.common_tags
+	name = "SAMLPostExample"
+	description = "Terraform Serverless Application Example"
+
+	tags = local.common_tags
 }
 
 resource "aws_api_gateway_resource" "proxy" {
-   rest_api_id = aws_api_gateway_rest_api.samlpost.id
-   parent_id   = aws_api_gateway_rest_api.samlpost.root_resource_id
-   path_part   = "{proxy+}"
+	provider = aws.iam-security-account
+
+	rest_api_id = aws_api_gateway_rest_api.samlpost.id
+	parent_id = aws_api_gateway_rest_api.samlpost.root_resource_id
+	path_part = "{proxy+}"
 }
 
 resource "aws_api_gateway_method" "proxy" {
-   rest_api_id   = aws_api_gateway_rest_api.samlpost.id
-   resource_id   = aws_api_gateway_resource.proxy.id
-   http_method   = "ANY"
-   authorization = "NONE"
- }
+	provider = aws.iam-security-account
+
+	rest_api_id = aws_api_gateway_rest_api.samlpost.id
+	resource_id = aws_api_gateway_resource.proxy.id
+	http_method = "ANY"
+	authorization = "NONE"
+}
 
 resource "aws_api_gateway_integration" "lambda" {
-   rest_api_id = aws_api_gateway_rest_api.samlpost.id
-   resource_id = aws_api_gateway_method.proxy.resource_id
-   http_method = aws_api_gateway_method.proxy.http_method
+	provider = aws.iam-security-account
 
-   integration_http_method = "POST"
-   type                    = "AWS_PROXY"
-   uri                     = aws_lambda_function.samlpost.invoke_arn
- }
+	rest_api_id = aws_api_gateway_rest_api.samlpost.id
+	resource_id = aws_api_gateway_method.proxy.resource_id
+	http_method = aws_api_gateway_method.proxy.http_method
+
+	integration_http_method = "POST"
+	type = "AWS_PROXY"
+	uri = aws_lambda_function.samlpost.invoke_arn
+}
 
 resource "aws_api_gateway_method" "proxy_root" {
-   rest_api_id   = aws_api_gateway_rest_api.samlpost.id
-   resource_id   = aws_api_gateway_rest_api.samlpost.root_resource_id
-   http_method   = "ANY"
-   authorization = "NONE"
- }
+	provider = aws.iam-security-account
 
- resource "aws_api_gateway_integration" "lambda_root" {
-   rest_api_id = aws_api_gateway_rest_api.samlpost.id
-   resource_id = aws_api_gateway_method.proxy_root.resource_id
-   http_method = aws_api_gateway_method.proxy_root.http_method
+	rest_api_id = aws_api_gateway_rest_api.samlpost.id
+	resource_id = aws_api_gateway_rest_api.samlpost.root_resource_id
+	http_method = "ANY"
+	authorization = "NONE"
+}
 
-   integration_http_method = "POST"
-   type                    = "AWS_PROXY"
-   uri                     = aws_lambda_function.samlpost.invoke_arn
- }
+resource "aws_api_gateway_integration" "lambda_root" {
+	provider = aws.iam-security-account
+
+	rest_api_id = aws_api_gateway_rest_api.samlpost.id
+	resource_id = aws_api_gateway_method.proxy_root.resource_id
+	http_method = aws_api_gateway_method.proxy_root.http_method
+
+	integration_http_method = "POST"
+	type = "AWS_PROXY"
+	uri = aws_lambda_function.samlpost.invoke_arn
+}
 
 resource "aws_api_gateway_deployment" "samlpost" {
-   depends_on = [
-     aws_api_gateway_integration.lambda,
-     aws_api_gateway_integration.lambda_root,
-   ]
+	provider = aws.iam-security-account
 
-   rest_api_id = aws_api_gateway_rest_api.samlpost.id
-//	@todo change value below to something like "saml"
-   stage_name  = "test"
+	depends_on = [
+		aws_api_gateway_integration.lambda,
+		aws_api_gateway_integration.lambda_root,
+	]
+
+	rest_api_id = aws_api_gateway_rest_api.samlpost.id
+	//	@todo change value below to something like "saml"
+	stage_name = "test"
 }
 
 
 output "base_url" {
-  value = aws_api_gateway_deployment.samlpost.invoke_url
+	value = aws_api_gateway_deployment.samlpost.invoke_url
 }
 
 

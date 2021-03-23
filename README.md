@@ -15,38 +15,27 @@ This login page is only going to be useful if you have a one or more AWS account
 
 # Build Steps
 
-1. Package (zip) Lambda files using `make`:
-```shell script
-make package-lambda 
-```
+1. Get credentials for target AWS root account and apply to current shell (or use AWS profile, etc.). (Note: [this](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-role.html#cli-configure-role-xaccount) might be helpful if you want to use an IAM user from the master account + cross-account role.
 
-2. Get credentials for target AWS account and apply to current shell (or use AWS profile, etc.). (Note: [this](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-role.html#cli-configure-role-xaccount) might be helpful if you want to use an IAM user from the master account + cross-account role.
-
-3. Execute Terraform against target account:
+2. Execute Terraform against target account:
 
 ```shell script
 cd terraform/aws
 terraform plan
-terraform apply -var="master_account_id=<master account ID> -var="resource_name_suffix=<mysuffix>" -var="keycloak_saml_name=<idp name>"
+terraform apply -var="resource_name_suffix=<mysuffix>" -var="keycloak_saml_name=<idp name>"
 ```
 
-> Example: terraform apply -var="master_account_id=12345678" -var="resource_name_suffix=prod" -var="keycloak_saml_name=BCGovKeyCloak-xyz123"
+> Example: terraform apply -var="resource_name_suffix=prod" -var="keycloak_saml_name=BCGovKeyCloak-xyz123"
 
 > _Note_:  You will also be prompted to confirm the `apply` command. Type "yes" when prompted.
 
-4.  Update Roles' Trust Permissions
+3.  Update Roles' Trust Permissions
 - Update all Roles' Trust Permission to include an addition SAML:aud value. This value should be the URL endpoint output from the previous step.
 - Note: This may be done as part of landing zone code.
 
-5. [Optional] Deploy the ``master_account_read_role.yaml`` CloudFormation Stack into the **master account**. This will enable the ability to have metadata pulled and displayed with the account listings.
+4. [Optional] Assign org read role ro users within the IdP (e.g. KeyCloak) to allow access to account metadata, and display of it on the login page. 
 
-    - This step deploys a Role that allows users read access to AWS Organizations to pull account names and metadata tags. 
-    
-```shell script
- make add-org-read-role  MASTER_ACCOUNT_ID=<MASTER_ACCOUNT_ID> CUSTOM_AUD=<URL OUTPUT FROM DEPLOY STEP> IDP_NAME=<same value as `keycloak_saml_name` used in Terraform>
-```
-
-6. [Optional] Assign org read role ro users within the IdP (e.g. KeyCloak) to allow access account metadata.
+> Note: Although this step is optional and the login app will work without it, you may see errors in the Javascript console without it.  
 
 This can be done manually, or - preferably - using automation via Terraform.  The form of the role to assign in the IdP will likely be be `<IDP_ARN>,<ROLE_ARN>`.
 
