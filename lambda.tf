@@ -52,8 +52,6 @@ resource "aws_iam_role" "lambda_exec" {
 
 
 data "aws_iam_policy" "AWSLambdaBasicExecutionRole" {
-	provider = aws.root-account
-
 	arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
