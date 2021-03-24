@@ -123,21 +123,21 @@
 
     let accountInfo = null;
     let samlResponse = null;
-    
+
     const serverless_saml_user_account_read_role = "##serverless_saml_user_account_read_role##";
 
     $(document).ready(function () {
-        
+
 
         samlResponse = $("input[name='SAMLResponse']").first().val();
 
         const decodedSAMLResponse = atob(samlResponse);
-        
+
         accountInfo = parseSAMLResponse(decodedSAMLResponse);
-        
+
         renderDialog();
         renderAccounts(accountInfo);
-        
+
         getAccountMetadata(samlResponse);
     });
 
@@ -149,38 +149,38 @@
                 </div>');
         $("#dialog").dialog({autoOpen: false, width: '600px'});
     }
-    
+
     function renderAccounts(accountInfo) {
         $.each(accountInfo, function(key, value) {
             let accordianHeader = $(`<h3>${key}<span></span></h3>`).addClass("account-header").data("accountId", key);
 
             let table = $("<table>").addClass("account-roles");
             $.each(value, function(k, v) {
-                
+
                 if (v.roleName == serverless_saml_user_account_read_role) {
                     return;
                 }
-                
+
                 let tr = $("<tr>").addClass("account-role")
                     .append(`<td><span>${v.roleName}</span></td><td><button class="ui-button ui-widget ui-corner-all click-credentials">Click for Credentials</button></td><td><button class="ui-button ui-widget ui-corner-all click-console">Login to Console</button></td>`);
-          
+
                 tr = tr.data(v);
 
                 table.append(tr);
             });
-            
+
             if ($("tr", $(table)).length == 0) {
                 return;
             }
-          
+
             let div = $(`<div><div class="account-tags"></div></div>`).append(table);
             $("#awsaccounts").append(accordianHeader).append(div);
-          
+
         });
 
         $("#awsaccounts").accordion({heightStyle: "content"});
 
-        $("button.click-credentials").click(function() {            
+        $("button.click-credentials").click(function() {
             let data = $(this).parents("tr.account-role").first().data();
             getSTSCredentials(data);
         });
@@ -190,66 +190,66 @@
             consoleSignIn(data);
         });
 
-       
+
     }
-    
-    
+
+
     function getAccountMetadata(samlResponse) {
-        
+
         $("#content").before('<div id="loadingtags"><h2>Loading tags...</h2><div id="progressbar"></div></div>');
 
         $("#progressbar").progressbar({
             value: false
         });
-        
-       
+
+
         $.ajax({
             type: "POST",
             url: "/test/accounttags",
             data: JSON.stringify({samlResponse: samlResponse}),
             success: function(data, textStatus, jqXHR){
                 $('#loadingtags').remove();
-                  
+
                 $("h3.account-header").each(function( index, value ) {
                     let rowData = $(value).data("accountId");
                     $("span", value).text(` - ${data[rowData].accountName}`);
-                    
+
                     let tags = data[rowData].tags;
-                    
+
                     let table = $('<table>')
                         .css('font-size', '12px');
                     tags.forEach(tag => table.append('<tr><td style="font-weight: bold; text-align: right">' + tag.Key + ':</td><td>' + tag.Value + '</td></tr>'));
-                    
+
                     $("div.account-tags", $(value).next()).append(table);
-                    
+
 
                 });
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 $("#loadingtags").remove();
-              
+
             },
             dataType: "json"
         });
-       
+
     }
 
     function getSTSCredentials(awsAccount) {
         $("#dialog").dialog("open");
 
         $("#dialog pre").first().html("Loading...");
-        
+
         const providerArn = awsAccount.providerArn;
         const roleArn = awsAccount.roleArn;
 
         let sts = new AWS.STS();
 		let params = {
-			DurationSeconds: 3600,
+			DurationSeconds: 21600,
 			PrincipalArn: providerArn,
 			RoleArn: roleArn,
-            SAMLAssertion: samlResponse            
+            SAMLAssertion: samlResponse
         };
-                
+
         sts.assumeRoleWithSAML(params, function (err, data) {
 			if (err) {
 				console.log(err, err.stack);
@@ -285,25 +285,25 @@ export AWS_DEFAULT_REGION=ca-central-1 \n';
         const providerArn = awsAccount.providerArn;
         const roleArn = awsAccount.roleArn;
         const sessionDuration = 3600;
-        
+
 		let params = {
 			DurationSeconds: sessionDuration,
 			PrincipalArn: providerArn,
 			RoleArn: roleArn,
-            SAMLAssertion: samlResponse            
+            SAMLAssertion: samlResponse
         };
-        
+
         $.ajax({
           type: "POST",
           url: "/test/consolelogin",
           data: JSON.stringify(params),
           success: function(data, textStatus, jqXHR){
-            
+
             window.location = data.Location;
           },
           dataType: "json"
         });
-                
+
     }
 
     function parseSAMLResponse(samlResponse) {
@@ -311,21 +311,21 @@ export AWS_DEFAULT_REGION=ca-central-1 \n';
         let capturingRegex = new RegExp(">(arn:aws:iam::\\d+:saml-provider/\\S+),(arn:aws:iam::(\\d+):role/(\\w+))<", "gi");
         ///>(arn:aws:iam::\d+:saml-provider\/\S+),(arn:aws:iam::(\d+):role\/(\w+))</gi
         let matches = samlResponse.matchAll(capturingRegex);
-        
+
         let awsAccounts = {};
         for (const match of matches) {
-           
+
             let awsAccount = {};
             awsAccount.providerArn = match[1];
             awsAccount.roleArn = match[2];
-           
+
             awsAccount.roleName = match[4];
-            
+
             if (awsAccounts[match[3]] == undefined) {
                 awsAccounts[match[3]] = [awsAccount];
             } else {
                 awsAccounts[match[3]].push(awsAccount);
-            }            
+            }
         }
 
         return awsAccounts;
@@ -335,7 +335,7 @@ export AWS_DEFAULT_REGION=ca-central-1 \n';
 
 <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    
+
     <div id="root">
 		<header>
 			<div class="banner">
