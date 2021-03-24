@@ -244,7 +244,7 @@
 
         let sts = new AWS.STS();
 		let params = {
-			DurationSeconds: 21600,
+			DurationSeconds: 3600,
 			PrincipalArn: providerArn,
 			RoleArn: roleArn,
             SAMLAssertion: samlResponse
