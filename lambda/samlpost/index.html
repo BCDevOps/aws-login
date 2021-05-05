@@ -91,7 +91,7 @@
 		}
 
 		a:hover {
-			color: #fff;
+			/* color: #fff; */
 			text-decoration: underline;
 		}
 
@@ -123,6 +123,7 @@
 
     let accountInfo = null;
     let samlResponse = null;
+    let samlSessionExpiration = null;
 
     const serverless_saml_user_account_read_role = "##serverless_saml_user_account_read_role##";
 
@@ -132,6 +133,19 @@
         samlResponse = $("input[name='SAMLResponse']").first().val();
 
         const decodedSAMLResponse = atob(samlResponse);
+
+        samlSessionExpiration = getSAMLExpiration(decodedSAMLResponse);
+        intervalID = setInterval(() => {
+            const remaining = Math.floor((samlSessionExpiration - Date.now())/1000);
+            if (remaining > 0) {
+                $("#sessiontimer").html(`<p>Session Time Remaining: ${remaining}</p>`);
+            } else {
+                clearInterval(intervalID);
+                const samlClient = `${getSAMLIssuer(decodedSAMLResponse)}/protocol/saml/clients/amazon-aws`;
+                $("#sessiontimer").html(`<p>Session Expired: <a href="${samlClient}">Refresh</a></p>`);
+                $("#awsaccounts").empty();
+            }
+        }, 1000);
 
         accountInfo = parseSAMLResponse(decodedSAMLResponse);
 
@@ -331,6 +345,23 @@ export AWS_DEFAULT_REGION=ca-central-1 \n';
         return awsAccounts;
     }
 
+    function getSAMLExpiration(samlResponse) {
+        let parser = new DOMParser();
+        let xmlDoc = parser.parseFromString(samlResponse,"text/xml");
+
+        const expStr = xmlDoc.getElementsByTagName("saml:SubjectConfirmationData")[0].getAttribute("NotOnOrAfter");
+        const session_exp = Date.parse(expStr);
+        return session_exp;
+    }
+
+    function getSAMLIssuer(samlResponse) {
+        let parser = new DOMParser();
+        let xmlDoc = parser.parseFromString(samlResponse,"text/xml");
+
+        const issuer = xmlDoc.getElementsByTagName("saml:Issuer")[0].innerHTML;
+        return issuer;
+    }
+
 </script>
 
 <body>
@@ -343,7 +374,12 @@ export AWS_DEFAULT_REGION=ca-central-1 \n';
 				<h1>BC Gov AWS Login</h1>
 			</div>
 		</header>
+
         <div id="content">
+
+            <div id="sessiontimer">
+
+            </div>
 
             <div id="awsaccounts">
 
