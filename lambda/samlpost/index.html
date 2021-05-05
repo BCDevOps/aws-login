@@ -349,7 +349,7 @@ export AWS_DEFAULT_REGION=ca-central-1 \n';
         let parser = new DOMParser();
         let xmlDoc = parser.parseFromString(samlResponse,"text/xml");
 
-        const expStr = xmlDoc.getElementsByTagName("saml:SubjectConfirmationData")[0].getAttribute("NotOnOrAfter");
+        const expStr = xmlDoc.getElementsByTagName("saml:Conditions")[0].getAttribute("NotOnOrAfter");
         const session_exp = Date.parse(expStr);
         return session_exp;
     }
