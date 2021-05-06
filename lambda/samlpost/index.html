@@ -313,7 +313,7 @@ export AWS_DEFAULT_REGION=ca-central-1 \n';
           data: JSON.stringify(params),
           success: function(data, textStatus, jqXHR){
 
-            window.location = data.Location;
+            window.open(data.Location);
           },
           dataType: "json"
         });
