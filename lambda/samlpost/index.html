@@ -258,7 +258,7 @@
 
         let sts = new AWS.STS();
 		let params = {
-			DurationSeconds: 3600,
+			DurationSeconds: 21600,
 			PrincipalArn: providerArn,
 			RoleArn: roleArn,
             SAMLAssertion: samlResponse
@@ -298,7 +298,7 @@ export AWS_DEFAULT_REGION=ca-central-1 \n';
     function consoleSignIn(awsAccount) {
         const providerArn = awsAccount.providerArn;
         const roleArn = awsAccount.roleArn;
-        const sessionDuration = 3600;
+        const sessionDuration = 21600;
 
 		let params = {
 			DurationSeconds: sessionDuration,
