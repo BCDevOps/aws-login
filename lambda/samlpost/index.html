@@ -1,406 +1,515 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     <meta name="description" content="Custom AWS SAML Response SignIn Page" />
     <title>AWS SAML SignIn</title>
     <style>
-       @font-face {
-			font-family: 'BC Sans';
-			src: url('https://www2.gov.bc.ca/StaticWebResources/static/shared/fonts/BCSans/BCSans-Bold.woff');
-			font-weight: normal;
-			font-style: normal;
-		}
+      @font-face {
+        font-family: "BC Sans";
+        src: url("https://www2.gov.bc.ca/StaticWebResources/static/shared/fonts/BCSans/BCSans-Bold.woff");
+        font-weight: normal;
+        font-style: normal;
+      }
 
-		header {
-			background-color: #036;
-			border-bottom: 2px solid #fcba19;
-			padding: 0 65px 0 65px;
-			color: #fff;
-			display: flex;
-			height: 65px;
-			/*top: 0px;*/
-			/*position: fixed;*/
-			width: 100%;
-		}
+      header {
+        background-color: #036;
+        border-bottom: 2px solid #fcba19;
+        padding: 0 65px 0 65px;
+        color: #fff;
+        display: flex;
+        height: 65px;
+        /*top: 0px;*/
+        /*position: fixed;*/
+        width: 100%;
+      }
 
-		header h1 {
-			font-family: ‘BC Sans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
-			font-weight: normal;  /* 400 */
-			margin: 5px 5px 0 18px;
-			visibility: hidden;
-		}
+      header h1 {
+        font-family: ‘BC Sans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
+        font-weight: normal; /* 400 */
+        margin: 5px 5px 0 18px;
+        visibility: hidden;
+      }
 
-		header .banner {
-			display: flex;
-			justify-content: flex-start;
-			align-items: center;
-			margin: 0 10px 0 0;
-			/* border-style: dotted;
-			border-width: 1px;
-			border-color: lightgrey; */
-		}
+      header .banner {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin: 0 10px 0 0;
+        /* border-style: dotted;
+        border-width: 1px;
+        border-color: lightgrey; */
+      }
 
-		header .other {
-			display: flex;
-			flex-grow: 1;
-			/* border-style: dotted;
-			border-width: 1px;
-			border-color: lightgrey; */
-		}
+      header .other {
+        display: flex;
+        flex-grow: 1;
+        /* border-style: dotted;
+        border-width: 1px;
+        border-color: lightgrey; */
+      }
 
-		footer {
-			background-color: #036;
-			border-top: 2px solid #fcba19;
-			color: #fff;
-			font-family: ‘BCSans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
-			position: fixed;
-			bottom: 0;
-			width: 100%;
-		}
+      body {
+        overflow: hidden;
+      }
 
-		footer .container {
-			display: flex;
-			justify-content: center;
-			flex-direction: column;
-			text-align: center;
-			height: 46px;
-		}
+      footer {
+        background-color: #036;
+        border-top: 2px solid #fcba19;
+        color: #fff;
+        font-family: ‘BCSans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+      }
 
-		footer ul {
-			display: flex;
-			flex-direction: row;
-			flex-wrap: wrap;
-			margin: 0;
-			color: #fff;
-			list-style: none;
-			align-items: center;
-			height: 100%;
-		}
+      footer .container {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+        height: 46px;
+      }
 
-		footer ul li a {
-			font-size: 0.813em;
-			font-weight: normal;  /* 400 */
-			color: #fff;
-			border-right: 1px solid #4b5e7e;
-			padding-left: 5px;
-			padding-right: 5px;
-		}
+      footer ul {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin: 0;
+        color: #fff;
+        list-style: none;
+        align-items: center;
+        height: 100%;
+      }
 
-		a:hover {
-			/* color: #fff; */
-			text-decoration: underline;
-		}
+      footer ul li a {
+        font-size: 0.813em;
+        font-weight: normal;
+        color: #fff;
+        border-right: 1px solid #4b5e7e;
+        padding-left: 5px;
+        padding-right: 5px;
+      }
 
-		:focus {
-			outline: 4px solid #3B99FC;
-			outline-offset: 1px;
-		}
+      .tab {
+        overflow: hidden;
+        border: 1px solid #ccc;
+        background-color: #f1f1f1;
+      }
 
-		@media screen and (min-width: 600px) and (max-width: 899px) {
-			header h1 {
-				font-size: calc(7px + 2.2vw);
-				visibility: visible;
-			}
-		}
+      .tab button {
+        background-color: inherit;
+        float: left;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        padding: 14px 16px;
+        transition: 0.3s;
+      }
 
-		@media screen and (min-width: 900px) {
-			header h1 {
-				font-size: 2.0em;
-				visibility: visible;
-			}
-		}
+      .tab button:hover {
+        background-color: #ddd;
+      }
+
+      .tab button.active {
+        background-color: #ccc;
+      }
+
+      .tabcontent {
+        display: none;
+        padding: 6px 12px;
+        border: 1px solid #ccc;
+        border-top: none;
+      }
+
+      a:hover {
+        /* color: #fff; */
+        text-decoration: underline;
+      }
+
+      :focus {
+        outline: 4px solid #3b99fc;
+        outline-offset: 1px;
+      }
+
+      @media screen and (min-width: 600px) and (max-width: 899px) {
+        header h1 {
+          font-size: calc(7px + 2.2vw);
+          visibility: visible;
+        }
+      }
+
+      @media screen and (min-width: 900px) {
+        header h1 {
+          font-size: 2em;
+          visibility: visible;
+        }
+      }
     </style>
-    <link href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" rel="stylesheet" type="text/css" />
-</head>
-<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-<script src="https://sdk.amazonaws.com/js/aws-sdk-2.663.0.min.js"></script>
-<script type="text/javascript">
-
+    <link
+      href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+  </head>
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script src="https://sdk.amazonaws.com/js/aws-sdk-2.663.0.min.js"></script>
+  <script type="text/javascript">
     let accountInfo = null;
     let samlResponse = null;
     let samlSessionExpiration = null;
 
-    const serverless_saml_user_account_read_role = "##serverless_saml_user_account_read_role##";
+    const serverless_saml_user_account_read_role =
+      "##serverless_saml_user_account_read_role##";
 
     $(document).ready(function () {
+      activateTab(null, "content");
+      $("#accounts-btn").toggleClass("active");
 
+      samlResponse = $("input[name='SAMLResponse']").first().val();
 
-        samlResponse = $("input[name='SAMLResponse']").first().val();
+      const decodedSAMLResponse = atob(samlResponse);
 
-        const decodedSAMLResponse = atob(samlResponse);
+      samlSessionExpiration = getSAMLExpiration(decodedSAMLResponse);
+      intervalID = setInterval(() => {
+        const remaining = Math.floor(
+          (samlSessionExpiration - Date.now()) / 1000
+        );
+        if (remaining > 0) {
+          $("#sessiontimer").html(
+            `<p>Session Time Remaining: ${remaining}</p>`
+          );
+        } else {
+          clearInterval(intervalID);
+          const samlClient = `${getSAMLIssuer(
+            decodedSAMLResponse
+          )}/protocol/saml/clients/amazon-aws`;
+          $("#sessiontimer").html(
+            `<p>Session Expired: <a href="${samlClient}">Refresh</a></p>`
+          );
+          $("#awsaccounts").empty();
+        }
+      }, 1000);
 
-        samlSessionExpiration = getSAMLExpiration(decodedSAMLResponse);
-        intervalID = setInterval(() => {
-            const remaining = Math.floor((samlSessionExpiration - Date.now())/1000);
-            if (remaining > 0) {
-                $("#sessiontimer").html(`<p>Session Time Remaining: ${remaining}</p>`);
-            } else {
-                clearInterval(intervalID);
-                const samlClient = `${getSAMLIssuer(decodedSAMLResponse)}/protocol/saml/clients/amazon-aws`;
-                $("#sessiontimer").html(`<p>Session Expired: <a href="${samlClient}">Refresh</a></p>`);
-                $("#awsaccounts").empty();
-            }
-        }, 1000);
+      accountInfo = parseSAMLResponse(decodedSAMLResponse);
 
-        accountInfo = parseSAMLResponse(decodedSAMLResponse);
+      renderDialog();
+      renderAccounts(accountInfo);
 
-        renderDialog();
-        renderAccounts(accountInfo);
-
-        getAccountMetadata(samlResponse);
+      getAccountMetadata(samlResponse);
     });
 
     function renderDialog() {
-        $("#content").append('<div id="dialog" title="AWS Credentials"> \
-                <p>Copy and paste the following commands into your shell to set up your AWS CLI environment variables.</p> \
-                <pre style="white-space: pre-wrap;word-wrap: break-word;padding: 1rem;">Loading...</pre> \
-                <button id="copyBtn" type="button" class="click-to-copy">Click to copy</button> \
-                </div>');
-        $("#dialog").dialog({autoOpen: false, width: '600px'});
+      $("#content").append(
+        '<div id="dialog" title="AWS Credentials"> \
+                    <p>Copy and paste the following commands into your shell to set up your AWS CLI environment variables.</p> \
+                    <pre style="white-space: pre-wrap;word-wrap: break-word;padding: 1rem;">Loading...</pre> \
+                    <button id="copyBtn" type="button" class="click-to-copy">Click to copy</button> \
+                    </div>'
+      );
+      $("#dialog").dialog({ autoOpen: false, width: "600px" });
     }
 
     function renderAccounts(accountInfo) {
-        $.each(accountInfo, function(key, value) {
-            let accordianHeader = $(`<h3>${key}<span></span></h3>`).addClass("account-header").data("accountId", key);
+      $.each(accountInfo, function (key, value) {
+        let accordianHeader = $(`<h3>${key}<span></span></h3>`)
+          .addClass("account-header")
+          .data("accountId", key);
 
-            let table = $("<table>").addClass("account-roles");
-            $.each(value, function(k, v) {
+        let table = $("<table>").addClass("account-roles");
+        $.each(value, function (k, v) {
+          if (v.roleName == serverless_saml_user_account_read_role) {
+            return;
+          }
 
-                if (v.roleName == serverless_saml_user_account_read_role) {
-                    return;
-                }
+          let tr = $("<tr>")
+            .addClass("account-role")
+            .append(
+              `<td><span>${v.roleName}</span></td><td><button class="ui-button ui-widget ui-corner-all click-credentials">Click for Credentials</button></td><td><button class="ui-button ui-widget ui-corner-all click-console">Login to Console</button></td>`
+            );
 
-                let tr = $("<tr>").addClass("account-role")
-                    .append(`<td><span>${v.roleName}</span></td><td><button class="ui-button ui-widget ui-corner-all click-credentials">Click for Credentials</button></td><td><button class="ui-button ui-widget ui-corner-all click-console">Login to Console</button></td>`);
+          tr = tr.data(v);
 
-                tr = tr.data(v);
-
-                table.append(tr);
-            });
-
-            if ($("tr", $(table)).length == 0) {
-                return;
-            }
-
-            let div = $(`<div><div class="account-tags"></div></div>`).append(table);
-            $("#awsaccounts").append(accordianHeader).append(div);
-
+          table.append(tr);
         });
 
-        $("#awsaccounts").accordion({heightStyle: "content"});
+        if ($("tr", $(table)).length == 0) {
+          return;
+        }
 
-        $("button.click-credentials").click(function() {
-            let data = $(this).parents("tr.account-role").first().data();
-            getSTSCredentials(data);
-        });
+        let div = $(`<div><div class="account-tags"></div></div>`).append(
+          table
+        );
+        $("#awsaccounts").append(accordianHeader).append(div);
+      });
 
-        $("button.click-console").click(function() {
-            let data = $(this).parents("tr.account-role").first().data();
-            consoleSignIn(data);
-        });
+      $("#awsaccounts").accordion({ heightStyle: "content" });
 
+      $("button.click-credentials").click(function () {
+        let data = $(this).parents("tr.account-role").first().data();
+        getSTSCredentials(data);
+      });
 
+      $("button.click-console").click(function () {
+        let data = $(this).parents("tr.account-role").first().data();
+        consoleSignIn(data);
+      });
     }
 
-
     function getAccountMetadata(samlResponse) {
+      $("#content").before(
+        '<div id="loadingtags"><h2>Loading tags...</h2><div id="progressbar"></div></div>'
+      );
 
-        $("#content").before('<div id="loadingtags"><h2>Loading tags...</h2><div id="progressbar"></div></div>');
+      $("#progressbar").progressbar({
+        value: false,
+      });
 
-        $("#progressbar").progressbar({
-            value: false
-        });
+      $.ajax({
+        type: "POST",
+        url: "/test/accounttags",
+        data: JSON.stringify({ samlResponse: samlResponse }),
+        success: function (data, textStatus, jqXHR) {
+          $("#loadingtags").remove();
 
+          $("h3.account-header").each(function (index, value) {
+            let rowData = $(value).data("accountId");
+            $("span", value).text(` - ${data[rowData].accountName}`);
 
-        $.ajax({
-            type: "POST",
-            url: "/test/accounttags",
-            data: JSON.stringify({samlResponse: samlResponse}),
-            success: function(data, textStatus, jqXHR){
-                $('#loadingtags').remove();
+            let tags = data[rowData].tags;
 
-                $("h3.account-header").each(function( index, value ) {
-                    let rowData = $(value).data("accountId");
-                    $("span", value).text(` - ${data[rowData].accountName}`);
+            let table = $("<table>").css("font-size", "12px");
+            tags.forEach((tag) =>
+              table.append(
+                '<tr><td style="font-weight: bold; text-align: right">' +
+                  tag.Key +
+                  ":</td><td>" +
+                  tag.Value +
+                  "</td></tr>"
+              )
+            );
 
-                    let tags = data[rowData].tags;
-
-                    let table = $('<table>')
-                        .css('font-size', '12px');
-                    tags.forEach(tag => table.append('<tr><td style="font-weight: bold; text-align: right">' + tag.Key + ':</td><td>' + tag.Value + '</td></tr>'));
-
-                    $("div.account-tags", $(value).next()).append(table);
-
-
-                });
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                $("#loadingtags").remove();
-
-            },
-            dataType: "json"
-        });
-
+            $("div.account-tags", $(value).next()).append(table);
+          });
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          $("#loadingtags").remove();
+        },
+        dataType: "json",
+      });
     }
 
     function getSTSCredentials(awsAccount) {
-        $("#dialog").dialog("open");
+      $("#dialog").dialog("open");
 
-        $("#dialog pre").first().html("Loading...");
+      $("#dialog pre").first().html("Loading...");
 
-        const providerArn = awsAccount.providerArn;
-        const roleArn = awsAccount.roleArn;
+      const providerArn = awsAccount.providerArn;
+      const roleArn = awsAccount.roleArn;
 
-        let sts = new AWS.STS();
-		let params = {
-			DurationSeconds: 21600,
-			PrincipalArn: providerArn,
-			RoleArn: roleArn,
-            SAMLAssertion: samlResponse
-        };
+      let sts = new AWS.STS();
+      let params = {
+        DurationSeconds: 21600,
+        PrincipalArn: providerArn,
+        RoleArn: roleArn,
+        SAMLAssertion: samlResponse,
+      };
 
-        sts.assumeRoleWithSAML(params, function (err, data) {
-			if (err) {
-				console.log(err, err.stack);
-				$('#dialog pre').first().html('Error: ' + err.message);
-			} else {
+      sts.assumeRoleWithSAML(params, function (err, data) {
+        if (err) {
+          console.log(err, err.stack);
+          $("#dialog pre")
+            .first()
+            .html("Error: " + err.message);
+        } else {
+          let accessKeyId = data.Credentials.AccessKeyId;
+          let secretKey = data.Credentials.SecretAccessKey;
+          let sessionToken = data.Credentials.SessionToken;
 
-				let accessKeyId = data.Credentials.AccessKeyId;
-				let secretKey = data.Credentials.SecretAccessKey;
-				let sessionToken = data.Credentials.SessionToken;
+          let text =
+            '\
+    export AWS_ACCESS_KEY_ID="' +
+            accessKeyId +
+            '" \n\
+    export AWS_SECRET_ACCESS_KEY="' +
+            secretKey +
+            '" \n\
+    export AWS_SESSION_TOKEN="' +
+            sessionToken +
+            '" \n\
+    export AWS_DEFAULT_REGION=ca-central-1 \n';
 
-				let text = '\
-export AWS_ACCESS_KEY_ID="' + accessKeyId + '" \n\
-export AWS_SECRET_ACCESS_KEY="' + secretKey + '" \n\
-export AWS_SESSION_TOKEN="' + sessionToken + '" \n\
-export AWS_DEFAULT_REGION=ca-central-1 \n';
+          $("#dialog pre").first().html(text);
 
-				$('#dialog pre').first().html(text);
-
-				$('#dialog').on('click', '#copyBtn', function () {
-					let text = $('#dialog pre').text();
-					let $tempInput = $("<textarea>");
-					$("body").append($tempInput);
-					$tempInput.val(text).select();
-					document.execCommand("copy");
-					$tempInput.remove();
-				});
-			}
-		});
-
+          $("#dialog").on("click", "#copyBtn", function () {
+            let text = $("#dialog pre").text();
+            let $tempInput = $("<textarea>");
+            $("body").append($tempInput);
+            $tempInput.val(text).select();
+            document.execCommand("copy");
+            $tempInput.remove();
+          });
+        }
+      });
     }
 
     function consoleSignIn(awsAccount) {
-        const providerArn = awsAccount.providerArn;
-        const roleArn = awsAccount.roleArn;
-        const sessionDuration = 21600;
+      const providerArn = awsAccount.providerArn;
+      const roleArn = awsAccount.roleArn;
+      const sessionDuration = 21600;
 
-		let params = {
-			DurationSeconds: sessionDuration,
-			PrincipalArn: providerArn,
-			RoleArn: roleArn,
-            SAMLAssertion: samlResponse
-        };
+      let params = {
+        DurationSeconds: sessionDuration,
+        PrincipalArn: providerArn,
+        RoleArn: roleArn,
+        SAMLAssertion: samlResponse,
+      };
 
-        $.ajax({
-          type: "POST",
-          url: "/test/consolelogin",
-          data: JSON.stringify(params),
-          success: function(data, textStatus, jqXHR){
-
-            window.open(data.Location);
-          },
-          dataType: "json"
-        });
-
+      $.ajax({
+        type: "POST",
+        url: "/test/consolelogin",
+        data: JSON.stringify(params),
+        success: function (data, textStatus, jqXHR) {
+          window.open(data.Location);
+        },
+        dataType: "json",
+      });
     }
 
     function parseSAMLResponse(samlResponse) {
-        //let capturingRegex = new RegExp(">(?<provider>arn:aws:iam::\\d+:saml-provider/\\S+),(?<role>arn:aws::iam::(?<accountid>\\d+):role/(?<rolename>\\w+))<");
-        let capturingRegex = new RegExp(">(arn:aws:iam::\\d+:saml-provider/\\S+),(arn:aws:iam::(\\d+):role/(\\w+))<", "gi");
-        ///>(arn:aws:iam::\d+:saml-provider\/\S+),(arn:aws:iam::(\d+):role\/(\w+))</gi
-        let matches = samlResponse.matchAll(capturingRegex);
+      //let capturingRegex = new RegExp(">(?<provider>arn:aws:iam::\\d+:saml-provider/\\S+),(?<role>arn:aws::iam::(?<accountid>\\d+):role/(?<rolename>\\w+))<");
+      let capturingRegex = new RegExp(
+        ">(arn:aws:iam::\\d+:saml-provider/\\S+),(arn:aws:iam::(\\d+):role/(\\w+))<",
+        "gi"
+      );
+      ///>(arn:aws:iam::\d+:saml-provider\/\S+),(arn:aws:iam::(\d+):role\/(\w+))</gi
+      let matches = samlResponse.matchAll(capturingRegex);
 
-        let awsAccounts = {};
-        for (const match of matches) {
+      let awsAccounts = {};
+      for (const match of matches) {
+        let awsAccount = {};
+        awsAccount.providerArn = match[1];
+        awsAccount.roleArn = match[2];
 
-            let awsAccount = {};
-            awsAccount.providerArn = match[1];
-            awsAccount.roleArn = match[2];
+        awsAccount.roleName = match[4];
 
-            awsAccount.roleName = match[4];
-
-            if (awsAccounts[match[3]] == undefined) {
-                awsAccounts[match[3]] = [awsAccount];
-            } else {
-                awsAccounts[match[3]].push(awsAccount);
-            }
+        if (awsAccounts[match[3]] == undefined) {
+          awsAccounts[match[3]] = [awsAccount];
+        } else {
+          awsAccounts[match[3]].push(awsAccount);
         }
+      }
 
-        return awsAccounts;
+      return awsAccounts;
     }
 
     function getSAMLExpiration(samlResponse) {
-        let parser = new DOMParser();
-        let xmlDoc = parser.parseFromString(samlResponse,"text/xml");
+      let parser = new DOMParser();
+      let xmlDoc = parser.parseFromString(samlResponse, "text/xml");
 
-        const expStr = xmlDoc.getElementsByTagName("saml:Conditions")[0].getAttribute("NotOnOrAfter");
-        const session_exp = Date.parse(expStr);
-        return session_exp;
+      const expStr = xmlDoc
+        .getElementsByTagName("saml:Conditions")[0]
+        .getAttribute("NotOnOrAfter");
+      const session_exp = Date.parse(expStr);
+      return session_exp;
     }
 
     function getSAMLIssuer(samlResponse) {
-        let parser = new DOMParser();
-        let xmlDoc = parser.parseFromString(samlResponse,"text/xml");
+      let parser = new DOMParser();
+      let xmlDoc = parser.parseFromString(samlResponse, "text/xml");
 
-        const issuer = xmlDoc.getElementsByTagName("saml:Issuer")[0].innerHTML;
-        return issuer;
+      const issuer = xmlDoc.getElementsByTagName("saml:Issuer")[0].innerHTML;
+      return issuer;
     }
 
-</script>
+    function activateTab(evt, id) {
+      // Declare all variables
+      var i, tabcontent, tablinks;
 
-<body>
+      // Get all elements with class="tabcontent" and hide them
+      tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+      }
+
+      // Get all elements with class="tablinks" and remove the class "active"
+      tablinks = document.getElementsByClassName("tablinks");
+      for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+
+      // Show the current tab, and add an "active" class to the button that opened the tab
+      elem = document.getElementById(id);
+      if (elem) {
+        elem.style.display = "block";
+      }
+      if (evt) {
+        evt.currentTarget.className += " active";
+      }
+    }
+  </script>
+
+  <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
 
     <div id="root">
-		<header>
-			<div class="banner">
-				<img src="https://www2.gov.bc.ca/assets/download/6124280C12B44DA492667E23E8BC38BF" alt="Branding logo"/>
-				<h1>BC Gov AWS Login</h1>
-			</div>
-		</header>
-
-        <div id="content">
-
-            <div id="sessiontimer">
-
-            </div>
-
-            <div id="awsaccounts">
-
-            </div>
+      <header>
+        <div class="banner">
+          <img
+            src="https://www2.gov.bc.ca/assets/download/6124280C12B44DA492667E23E8BC38BF"
+            alt="Branding logo"
+          />
+          <h1>BC Gov AWS Login</h1>
         </div>
+      </header>
 
-        <input type="hidden" name="SAMLResponse" value="##SAMLRESPONSE##" />
+      <div class="tab">
+        <button
+          id="accounts-btn"
+          class="tablinks"
+          onclick="activateTab(event, 'content')"
+        >
+          Accounts
+        </button>
+        <button class="tablinks" onclick="activateTab(event, 'services')">
+          Supported Services
+        </button>
+      </div>
 
-        <footer class="footer">
-			<div class="container">
-				<ul>
-					<li><a href=".">Home</a></li>
-					<li><a href=".">Disclaimer</a></li>
-					<li><a href=".">Privacy</a></li>
-					<li><a href=".">Accessibility</a></li>
-					<li><a href=".">Copyright</a></li>
-					<li><a href=".">Contact Us</a></li>
-				</ul>
-			</div>
-		</footer>
+      <div id="content" class="tabcontent">
+        <div id="sessiontimer"></div>
+
+        <div id="awsaccounts"></div>
+      </div>
+
+      <div id="services" class="tabcontent">
+        <iframe
+          class="airtable-embed"
+          src="https://airtable.com/embed/shrfZS294sP5GcbKr?backgroundColor=yellow"
+          frameborder="0"
+          onmousewheel=""
+          width="100%"
+          height="900px"
+        ></iframe>
+      </div>
+
+      <input type="hidden" name="SAMLResponse" value="##SAMLRESPONSE##" />
+
+      <footer class="footer">
+        <div class="container">
+          <ul>
+            <li><a href=".">Home</a></li>
+            <li><a href=".">Disclaimer</a></li>
+            <li><a href=".">Privacy</a></li>
+            <li><a href=".">Accessibility</a></li>
+            <li><a href=".">Copyright</a></li>
+            <li><a href=".">Contact Us</a></li>
+          </ul>
+        </div>
+      </footer>
     </div>
-</body>
-
+  </body>
 </html>
