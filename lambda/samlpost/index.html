@@ -498,8 +498,26 @@
         >
           Accounts
         </button>
-        <button class="tablinks" onclick="activateTab(event, 'services')">
+
+        <button
+          class="tablinks"
+          onclick="activateTab(event, 'services')"
+        >
           Supported Services
+        </button>
+
+        <button
+          class="tablinks"
+          onclick="activateTab(event, 'platform-dashboard')"
+        >
+          Platform Health Dashboard
+        </button>
+
+        <button
+          class="tablinks"
+          onclick="activateTab(event, 'aws-dashboard')"
+        >
+          AWS Service Health Dashboard
         </button>
 
         <div id="logout"></div>
@@ -515,6 +533,26 @@
         <iframe
           class="airtable-embed"
           src="https://airtable.com/embed/shrfZS294sP5GcbKr?backgroundColor=yellow"
+          frameborder="0"
+          onmousewheel=""
+          width="100%"
+          height="900px"
+        ></iframe>
+      </div>
+
+      <div id="platform-dashboard" class="tabcontent">
+        <iframe
+          src="https://stats.uptimerobot.com/JKy3os8NmR"
+          frameborder="0"
+          onmousewheel=""
+          width="100%"
+          height="900px"
+        ></iframe>
+      </div>
+
+      <div id="aws-dashboard" class="tabcontent">
+        <iframe
+          src="https://status.aws.amazon.com/#NA_block"
           frameborder="0"
           onmousewheel=""
           width="100%"
