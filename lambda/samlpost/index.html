@@ -453,12 +453,6 @@
       // Declare all variables
       var i, tabcontent, tablinks;
 
-      test = document.getElementsByClassName("logo");
-      for (i = 0; i < test.length; i++) {
-        test[i].style.display = "none";
-      }
-
-
       // Get all elements with class="tabcontent" and hide them
       tabcontent = document.getElementsByClassName("tabcontent");
       for (i = 0; i < tabcontent.length; i++) {
@@ -535,10 +529,10 @@
         <div id="awsaccounts"></div>
       </div>
 
-      <div id="aws-dashboard" class="tabcontent">
+      <div id="services" class="tabcontent">
         <iframe
           class="airtable-embed"
-          src="https://status.aws.amazon.com/#NA_block"
+          src="https://airtable.com/embed/shrfZS294sP5GcbKr?backgroundColor=yellow"
           frameborder="0"
           onmousewheel=""
           width="100%"
@@ -548,7 +542,6 @@
 
       <div id="platform-dashboard" class="tabcontent">
         <iframe
-          class="airtable-embed"
           src="https://stats.uptimerobot.com/JKy3os8NmR"
           frameborder="0"
           onmousewheel=""
@@ -557,10 +550,9 @@
         ></iframe>
       </div>
 
-      <div id="services" class="tabcontent">
+      <div id="aws-dashboard" class="tabcontent">
         <iframe
-          class="airtable-embed"
-          src="https://airtable.com/embed/shrfZS294sP5GcbKr?backgroundColor=yellow"
+          src="https://status.aws.amazon.com/#NA_block"
           frameborder="0"
           onmousewheel=""
           width="100%"
