@@ -4,7 +4,7 @@ This repo contains code for an replacement AWS login page that provides a facili
 
 ## Why would I want this?
 
-You might want this if you don't use AWS IAM users, but have an AWS SAML SSO set up that provides for convenient and secure, role-based interactive access to the AWS web console, but you also want to be able to use command line tools to interact with your AWS accounts.  Without this login page (or alternative) you won't be able to get credentials to provide to command tools.  
+You might want this if you don't use AWS IAM users, but have an AWS SAML SSO set up that provides for convenient and secure, role-based interactive access to the AWS web console, but you also want to be able to use command line tools to interact with your AWS accounts.  Without this login page (or alternative) you won't be able to get credentials to provide to command tools.
 
 ### Prerequisites/Assumptions
 
@@ -35,9 +35,9 @@ terraform apply -var="resource_name_suffix=<mysuffix>" -var="keycloak_saml_name=
 
 > Note: if "geo restrictions" are desired, the value usef the SAML:aud should be the output `cloudfront_url` rather than `base_url`.
 
-4. [Optional] Assign org read role ro users within the IdP (e.g. KeyCloak) to allow access to account metadata, and display of it on the login page. 
+4. [Optional] Assign org read role ro users within the IdP (e.g. KeyCloak) to allow access to account metadata, and display of it on the login page.
 
-> Note: Although this step is optional and the login app will work without it, you may see errors in the Javascript console without it.  
+> Note: Although this step is optional and the login app will work without it, you may see errors in the Javascript console without it.
 
 This can be done manually, or - preferably - using automation via Terraform.  The form of the role to assign in the IdP will likely be be `<IDP_ARN>,<ROLE_ARN>`.
 
@@ -52,7 +52,7 @@ If you have questions about this tool, a suggestion, or find a bug, please [Crea
 
 ## Technical Details
 
-Once deployed and access by a user as part of their login flow, the page retrieves a set of temporary credentials that can be used in on the command line to interact with the AWS.        
+Once deployed and access by a user as part of their login flow, the page retrieves a set of temporary credentials that can be used in on the command line to interact with the AWS.
 
 ## Dependencies
 
@@ -75,8 +75,8 @@ You're looking at it :)
 This login page provides an alternative to browser mechanisms ("userscripts") and local scripts to retrieve temporary credentials.  Code executes within the user's browser, invoking the AWS API over a secure HTTPS connection when retrieving temporary credentials.  If the user chooses to log in to the console, server-side code will be executed that retrieves a web console token.  All code executes only when explicitly invoked by the user.
 
 ## How to Contribute
- 
+
 If you would like to contribute, please see our [CONTRIBUTING](CONTRIBUTING.md) guidelines.
 
-Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md). 
+Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md).
 By participating in this project you agree to abide by its terms.
