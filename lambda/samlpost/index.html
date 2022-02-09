@@ -515,9 +515,9 @@
 
         <button
           class="tablinks"
-          onclick="activateTab(event, 'aws-dashboard')"
+          onclick="activateTab(event, 'external-dashboard')"
         >
-          AWS Service Health Dashboard
+          External Services Health Dashboard
         </button>
 
         <div id="logout"></div>
@@ -550,14 +550,11 @@
         ></iframe>
       </div>
 
-      <div id="aws-dashboard" class="tabcontent">
-        <iframe
-          src="https://status.aws.amazon.com/#NA_block"
-          frameborder="0"
-          onmousewheel=""
-          width="100%"
-          height="900px"
-        ></iframe>
+      <div id="external-dashboard" class="tabcontent">
+        <ul>
+          <li><a href="https://status.aws.amazon.com" target="_blank">AWS Status Page</a></li>
+          <li><a href="https://www.githubstatus.com" target="_blank">GitHub Status Page</a></li>
+        </ul>
       </div>
 
       <input type="hidden" name="SAMLResponse" value="##SAMLRESPONSE##" />
