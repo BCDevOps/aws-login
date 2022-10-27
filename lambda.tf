@@ -21,7 +21,11 @@ resource "aws_lambda_function" "samlpost" {
 
   environment {
     variables = {
-      samlReadRole = "arn:aws:iam::${local.master_account_id}:saml-provider/${var.keycloak_saml_name},arn:aws:iam::${local.master_account_id}:role/${local.saml_read_role_name}"
+      samlReadRole = "arn:aws:iam::${local.master_account_id}:saml-provider/${var.keycloak_saml_name},arn:aws:iam::${local.master_account_id}:role/${local.saml_read_role_name}",
+      kc_base_url = var.kc_base_url,
+      kc_realm = var.kc_realm,
+      kc_terraform_auth_client_id = var.kc_terraform_auth_client_id,
+      kc_terraform_auth_client_secret = var.kc_terraform_auth_client_secret
     }
   }
 

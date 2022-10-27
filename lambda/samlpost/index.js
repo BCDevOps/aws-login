@@ -4,9 +4,9 @@ let fs = require("fs");
 let path = require("path");
 let AWS = require("aws-sdk");
 let https = require('https');
+var qs = require('querystring');
 
 exports.handler = function (event, context, callback) {
-
     if (event.path == "/" && event.httpMethod == "POST") {
         const fileName = "index.html";
 
@@ -46,6 +46,10 @@ exports.handler = function (event, context, callback) {
             let buff = Buffer.from(body.samlResponse, "base64");
             let decodedsamlResponse = buff.toString("utf-8");
 
+            // check if azure ad idir user is logged in
+            if (checkSAMLForAzureIDP(decodedsamlResponse)) {
+              transferKeyCloakGroups(decodedsamlResponse)
+            }
             let accounts = parseSAMLResponse(decodedsamlResponse);
 
             let saml_read_role = process.env.samlReadRole.split(",");
@@ -238,4 +242,159 @@ function parseSAMLResponse(samlResponse) {
     }
 
     return awsAccounts;
+}
+
+
+
+//////////////////////////////////////////
+////// Azure AD migration functions //////
+//////////////////////////////////////////
+
+// TODO: delete this after migration from Siteminder IDIR IDP to Azure AD IDIR IDP is complete
+
+const kc_realm                        = process.env.kc_realm;
+const kc_base_url                     = process.env.kc_base_url;
+const kc_terraform_auth_client_id     = process.env.kc_terraform_auth_client_id;
+const kc_terraform_auth_client_secret = process.env.kc_terraform_auth_client_secret;
+
+function checkSAMLForAzureIDP(saml_response){
+  return saml_response.includes("@azureidir");
+}
+
+function parseSAMLForEmail(saml_response){
+  let capturing_regex = new RegExp(">\\S+@azureidir<", "gm");
+  let matches = saml_response.match(capturing_regex);
+  let email = matches[0].replace('>', '').replace('@azureidir<', '')
+  console.log('parsed SAML, Email is: ' + email)
+  return email;
+}
+
+function makeHttpRequest(options, post_data){
+  return new Promise(function (resolve, reject){
+    let req = https.request(options, function (res) {
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        return reject(new Error('statusCode=' + res.statusCode));
+      }
+      let chunks = [];
+      res.on("data", function (chunk) {
+        chunks.push(chunk);
+      });
+      res.on("end", function () {
+        let body = Buffer.concat(chunks);
+        resolve(body);
+      });
+    });
+    req.on('error', function(error){
+      reject(error);
+    });
+    req.write(post_data);
+    req.end();
+  });
+}
+
+async function getKeyCloakToken(){
+  let options = {
+    'method': 'POST',
+    'hostname': kc_base_url,
+    'path': '/auth/realms/' + kc_realm + '/protocol/openid-connect/token',
+    'headers': {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    'maxRedirects': 20
+  };
+  let post_data = qs.stringify({
+    'client_id': kc_terraform_auth_client_id,
+    'client_secret': kc_terraform_auth_client_secret,
+    'grant_type': 'client_credentials'
+  });
+  return makeHttpRequest(options, post_data);
+}
+
+async function getUsersWithEmail(headers, target_user_email){
+  let options = {
+    'method': 'GET',
+    'hostname': kc_base_url,
+    'path': '/auth/admin/realms/' + kc_realm + '/users?email=' + target_user_email,
+    'headers': headers,
+    'maxRedirects': 20
+  };
+  let post_data = qs.stringify({});
+  return  makeHttpRequest(options, post_data);
+}
+
+async function getSiteminderUserGroups(headers, siteminder_user_id){
+  let options = {
+    'method': 'GET',
+    'hostname': kc_base_url,
+    'path': '/auth/admin/realms/' + kc_realm + '/users/' + siteminder_user_id + '/groups',
+    'headers': headers,
+    'maxRedirects': 20
+  };
+  let post_data = qs.stringify({});
+  return  makeHttpRequest(options, post_data);
+}
+
+async function putAzureADUserGroup(headers, azure_ad_user_id, group_id){
+  let options = {
+    'method': 'PUT',
+    'hostname': kc_base_url,
+    'path': '/auth/admin/realms/' + kc_realm + '/users/' + azure_ad_user_id + '/groups/' + group_id,
+    'headers': headers,
+    'maxRedirects': 20
+  };
+  let post_data = qs.stringify({});
+  return  makeHttpRequest(options, post_data);
+}
+
+async function disableSiteminderUser(headers, siteminder_user_id) {
+
+  headers['Content-Type'] = 'application/json';
+
+  let options = {
+    'method': 'PUT',
+    'hostname': kc_base_url,
+    'path': '/auth/admin/realms/' + kc_realm + '/users/' + siteminder_user_id,
+    'headers': headers,
+    'maxRedirects': 20
+  };
+  var post_data = JSON.stringify({
+    "enabled": false
+  });
+  return  makeHttpRequest(options, post_data);
+}
+
+async function transferKeyCloakGroups(saml_response){
+  console.log("In transferKeyCloakGroups(), transferring groups from Sitminder IDP user to Azure AD IDP user");
+
+  let token_response = await getKeyCloakToken();
+  console.log("Retrieved Token is: " + JSON.parse(token_response).access_token);
+  let headers = {
+    'Authorization': 'Bearer ' + JSON.parse(token_response).access_token,
+    'Content-Type': 'application/x-www-form-urlencoded'
+  };
+
+  let target_user_email = parseSAMLForEmail(saml_response);
+  let user_array_response = await getUsersWithEmail(headers, target_user_email);
+  console.log("Retrieved User List is: " + user_array_response);
+
+  let common_email_users = JSON.parse(user_array_response);
+  common_email_users.forEach(async function (user_a) {
+    if (user_a.username.includes('@idir')) {
+      let siteminder_user_groups_response = await getSiteminderUserGroups(headers, user_a.id);
+      console.log('Sitminder User Groups are: ' + siteminder_user_groups_response);
+      let siteminder_user_groups = JSON.parse(siteminder_user_groups_response);
+
+      console.log('Transferring Groups');
+      common_email_users.forEach(async function (user_b) {
+        if (user_b.username.includes('@azureidir')) {
+          siteminder_user_groups.forEach(async function (group) {
+            await putAzureADUserGroup(headers, user_b.id, group.id);
+          });
+          console.log('Disabling Siteminder User');
+          await disableSiteminderUser(headers, user_a.id);
+        }
+      });
+    }
+  });
+  console.log("Finished transferring groups from Sitminder IDP user to Azure AD IDP user");
 }
