@@ -8,3 +8,27 @@ variable "resource_name_suffix" {
   type        = string
   default     = ""
 }
+
+variable "kc_base_url" {
+  description = "The base URL for the Keycloak domain, does not include https://"
+  type        = string
+  default     = ""
+}
+
+variable "kc_realm" {
+  description = "The name name of your Keycloak realm"
+  type        = string
+  default     = ""
+}
+
+variable "kc_terraform_auth_client_id" {
+  description = "The ID of the keycloak client used for terraform automation"
+  type        = string
+  default     = ""
+}
+
+variable "kc_terraform_auth_client_secret" {
+  description = "The authentication secret of the keycloak client used for terraform automation"
+  type        = string
+  default     = ""
+}

@@ -98,6 +98,3 @@ resource "aws_iam_role_policy" "saml_read_role_policy" {
   }
 EOF
 }
-
-
-
