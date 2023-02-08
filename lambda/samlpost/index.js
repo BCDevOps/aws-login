@@ -221,7 +221,7 @@ exports.handler = function (event, context, callback) {
 
 function parseSAMLResponse(samlResponse) {
     //let capturingRegex = new RegExp(">(?<provider>arn:aws:iam::\\d+:saml-provider/\\S+),(?<role>arn:aws::iam::(?<accountid>\\d+):role/(?<rolename>\\w+))<");
-    let capturingRegex = new RegExp(">(arn:aws:iam::\\d+:saml-provider/[a-zA-Z-_@=+.]+),(arn:aws:iam::(\\d+):role/([a-zA-Z-_@=+.]+))<", "gi");
+    let capturingRegex = new RegExp(">(arn:aws:iam::\\d+:saml-provider/[a-zA-Z0-9-_@=+.]+),(arn:aws:iam::(\\d+):role/([a-zA-Z0-9-_@=+.]+))<", "gi");
     ///>(arn:aws:iam::\d+:saml-provider\/\S+),(arn:aws:iam::(\d+):role\/(\w+))</gi
     let matches = samlResponse.matchAll(capturingRegex);
 
