@@ -93,7 +93,7 @@ resource "aws_iam_role" "saml_read_role" {
     {
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::${local.iam_security_account.id}:role/serverless_saml_lambda-dev"
+        "AWS": "arn:aws:iam::${local.iam_security_account.id}:role/${var.lambda_name}-${var.resource_name_suffix}"
       },
       "Action": "sts:AssumeRole"
     }

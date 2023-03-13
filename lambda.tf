@@ -7,7 +7,7 @@ data "archive_file" "lambda_zip" {
 resource "aws_lambda_function" "samlpost" {
   provider = aws.iam-security-account
 
-  function_name = "SAMLPostExample-${var.resource_name_suffix}"
+  function_name = "${var.lambda_name}-${var.resource_name_suffix}"
   filename      = data.archive_file.lambda_zip.output_path
 
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
@@ -35,7 +35,7 @@ resource "aws_lambda_function" "samlpost" {
 resource "aws_iam_role" "lambda_exec" {
   provider = aws.iam-security-account
 
-  name               = "serverless_saml_lambda-${var.resource_name_suffix}"
+  name               = "${var.lambda_name}-${var.resource_name_suffix}"
   assume_role_policy = <<EOF
 {
    "Version": "2012-10-17",
