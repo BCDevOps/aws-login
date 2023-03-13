@@ -68,6 +68,13 @@ resource "aws_iam_role" "saml_read_role" {
           "SAML:aud": "${local.saml_destination_url}"
         }
       }
+    },
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::${local.iam_security_account.id}:role/serverless_saml_lambda-dev"
+      },
+      "Action": "sts:AssumeRole"
     }
   ]
 }

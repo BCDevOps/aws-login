@@ -50,24 +50,19 @@ exports.handler = function (event, context, callback) {
             if (checkSAMLForAzureIDP(decodedsamlResponse)) {
               transferKeyCloakGroups(decodedsamlResponse)
             }
+
             let accounts = parseSAMLResponse(decodedsamlResponse);
-
             let saml_read_role = process.env.samlReadRole.split(",");
-
-            let principalArn = saml_read_role[0];
             let roleArn = saml_read_role[1];
-            let samlResponse = body.samlResponse;
-
             let sts = new AWS.STS();
 
             let params = {
                 DurationSeconds: 900,
-                PrincipalArn: principalArn,
                 RoleArn: roleArn,
-                SAMLAssertion: samlResponse
+        RoleSessionName: "AWSLoginAppOrgRead"
             };
 
-            sts.assumeRoleWithSAML(params, function (err, data) {
+      sts.assumeRole(params, function (err, data) {
                 if (err) {
                     console.log(err, err.stack);
                     var response = {

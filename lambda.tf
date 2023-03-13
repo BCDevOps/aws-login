@@ -21,10 +21,10 @@ resource "aws_lambda_function" "samlpost" {
 
   environment {
     variables = {
-      samlReadRole = "arn:aws:iam::${local.master_account_id}:saml-provider/${var.keycloak_saml_name},arn:aws:iam::${local.master_account_id}:role/${local.saml_read_role_name}",
-      kc_base_url = var.kc_base_url,
-      kc_realm = var.kc_realm,
-      kc_terraform_auth_client_id = var.kc_terraform_auth_client_id,
+      samlReadRole                    = "arn:aws:iam::${local.master_account_id}:saml-provider/${var.keycloak_saml_name},arn:aws:iam::${local.master_account_id}:role/${local.saml_read_role_name}",
+      kc_base_url                     = var.kc_base_url,
+      kc_realm                        = var.kc_realm,
+      kc_terraform_auth_client_id     = var.kc_terraform_auth_client_id,
       kc_terraform_auth_client_secret = var.kc_terraform_auth_client_secret
     }
   }
@@ -64,6 +64,28 @@ resource "aws_iam_role_policy_attachment" "test-attach" {
 
   role       = aws_iam_role.lambda_exec.name
   policy_arn = data.aws_iam_policy.AWSLambdaBasicExecutionRole.arn
+}
+
+resource "aws_iam_policy" "assume_role_org_read" {
+  provider = aws.iam-security-account
+  name     = "serverless_saml_lambda-org-read-${var.resource_name_suffix}"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "sts:AssumeRole"
+      ]
+      Resource = "${aws_iam_role.saml_read_role.arn}"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "thisSTS" {
+  provider   = aws.iam-security-account
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = aws_iam_policy.assume_role_org_read.arn
 }
 
 resource "aws_lambda_permission" "apigw" {
