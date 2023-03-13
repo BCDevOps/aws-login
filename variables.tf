@@ -32,3 +32,8 @@ variable "kc_terraform_auth_client_secret" {
   type        = string
   default     = ""
 }
+
+variable "domain_name" {
+  description = "Domain name of the login app"
+  type = string
+}
