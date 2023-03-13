@@ -1,7 +1,7 @@
 resource "aws_api_gateway_rest_api" "samlpost" {
   provider = aws.iam-security-account
 
-  name        = "SAMLPostExample"
+  name        = "LoginAppSAML"
   description = "Terraform Serverless Application Example"
 
   tags = local.common_tags

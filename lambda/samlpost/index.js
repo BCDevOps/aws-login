@@ -7,7 +7,20 @@ let https = require('https');
 var qs = require('querystring');
 
 exports.handler = function (event, context, callback) {
-    if (event.path == "/" && event.httpMethod == "POST") {
+  if (event.path == "/redirect" && event.httpMethod == "GET") {
+    const kc_base_url = process.env.kc_base_url;
+    const kc_realm = process.env.kc_realm;
+    const response = {
+      statusCode: 301,
+      headers: {
+        Location: 'https://' + kc_base_url + '/auth/realms/' + kc_realm + '/protocol/saml/clients/amazon-aws',
+      }
+    };
+
+    callback(null, response)
+  }
+
+  else if (event.path == "/" && event.httpMethod == "POST") {
         const fileName = "index.html";
 
         let resolved = null;

@@ -115,6 +115,7 @@ resource "aws_cloudfront_distribution" "geofencing" {
   }
 
   aliases = ["login.${var.domain_name}"]
+  default_root_object = "${aws_api_gateway_deployment.samlpost.stage_name}/redirect"
 
   price_class = "PriceClass_100"
 
