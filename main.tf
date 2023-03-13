@@ -81,18 +81,6 @@ resource "aws_iam_role" "saml_read_role" {
     {
       "Effect": "Allow",
       "Principal": {
-        "Federated": "arn:aws:iam::${local.master_account_id}:saml-provider/${var.keycloak_saml_name}"
-      },
-      "Action": "sts:AssumeRoleWithSAML",
-      "Condition": {
-        "StringEquals": {
-          "SAML:aud": "${local.saml_destination_url}"
-        }
-      }
-    },
-    {
-      "Effect": "Allow",
-      "Principal": {
         "AWS": "arn:aws:iam::${local.iam_security_account.id}:role/${var.lambda_name}-${var.resource_name_suffix}"
       },
       "Action": "sts:AssumeRole"
