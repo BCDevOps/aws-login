@@ -1,3 +1,9 @@
+variable "lambda_name" {
+  description = "The name of the created lambda function"
+  type        = string
+  default     = "LoginApp_saml_lambda"
+}
+
 variable "keycloak_saml_name" {
   description = "The name of an (existing) Keycloak IDP in the root account that will be referenced when assuming the role used to read account metadata.  It generally will be suffixed with an alphanumeric discriminator (corresponding to a KeyCloak realm) since more than one IDP may exist."
   default     = "BCGovKeyCloak"
@@ -31,4 +37,9 @@ variable "kc_terraform_auth_client_secret" {
   description = "The authentication secret of the keycloak client used for terraform automation"
   type        = string
   default     = ""
+}
+
+variable "domain_name" {
+  description = "Domain name of the login app"
+  type        = string
 }

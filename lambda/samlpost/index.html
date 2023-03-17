@@ -301,7 +301,7 @@
 
       $.ajax({
         type: "POST",
-        url: "/test/accounttags",
+        url: "/api/accounttags",
         data: JSON.stringify({ samlResponse: samlResponse }),
         success: function (data, textStatus, jqXHR) {
           $("#loadingtags").remove();
@@ -397,7 +397,7 @@
 
       $.ajax({
         type: "POST",
-        url: "/test/consolelogin",
+        url: "/api/consolelogin",
         data: JSON.stringify(params),
         success: function (data, textStatus, jqXHR) {
           window.open(data.Location);

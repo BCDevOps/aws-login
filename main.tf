@@ -19,6 +19,26 @@ provider "aws" {
   }
 }
 
+provider "aws" {
+  region = "us-east-1"
+  alias  = "iam-security-account-us-east-1"
+
+  assume_role {
+    role_arn     = "arn:aws:iam::${local.iam_security_account.id}:role/AWSCloudFormationStackSetExecutionRole"
+    session_name = "slz-terraform-automation"
+  }
+}
+
+provider "aws" {
+  region = "ca-central-1"
+  alias  = "perimeter-account"
+
+  assume_role {
+    role_arn     = "arn:aws:iam::${local.perimeter_account.id}:role/AWSCloudFormationStackSetExecutionRole"
+    session_name = "slz-terraform-automation"
+  }
+}
+
 module "lz_info" {
   source = "github.com/BCDevOps/terraform-aws-sea-organization-info"
   providers = {
@@ -32,9 +52,10 @@ data "aws_caller_identity" "master_account_caller" {
 
 
 locals {
-  core_accounts        = { for account in module.lz_info.core_accounts : account.name => account }
-  iam_security_account = local.core_accounts["iam-security"]
-  saml_destination_url = "https://${aws_cloudfront_distribution.geofencing.domain_name}/${aws_api_gateway_deployment.samlpost.stage_name}"
+  core_accounts          = { for account in module.lz_info.core_accounts : account.name => account }
+  iam_security_account   = local.core_accounts["iam-security"]
+  perimeter_account      = local.core_accounts["Perimeter"]
+  saml_destination_url   = "https://login.${var.domain_name}/${aws_api_gateway_deployment.samlpost.stage_name}"
 
 
   //Put all common tags here
@@ -60,14 +81,9 @@ resource "aws_iam_role" "saml_read_role" {
     {
       "Effect": "Allow",
       "Principal": {
-        "Federated": "arn:aws:iam::${local.master_account_id}:saml-provider/${var.keycloak_saml_name}"
+        "AWS": "arn:aws:iam::${local.iam_security_account.id}:role/${var.lambda_name}-${var.resource_name_suffix}"
       },
-      "Action": "sts:AssumeRoleWithSAML",
-      "Condition": {
-        "StringEquals": {
-          "SAML:aud": "${local.saml_destination_url}"
-        }
-      }
+      "Action": "sts:AssumeRole"
     }
   ]
 }
@@ -88,7 +104,7 @@ resource "aws_iam_role_policy" "saml_read_role_policy" {
               "Effect": "Allow",
               "Action": [
                 "organizations:ListTagsForResource",
-				"organizations:DescribeAccount"
+				        "organizations:DescribeAccount"
             ],
             "Resource": [
                 "*"
