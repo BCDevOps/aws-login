@@ -194,12 +194,9 @@
         decodedSAMLResponse
       )}/protocol/saml/clients/amazon-aws`;
 
-      const samlIssuerURL = getSAMLIssuer(decodedSAMLResponse)
-      const CaptureURLRegex = new RegExp(
-        "((http[s]):\\/?\\/?[^:\\/\\s]+)(\\/\\w+)*\\/[\\w\\-\\.]+[^#?\\s]+.*?(#[\\w\\-]+)?$"
-      )
-      let ParsedURL = samlIssuerURL.match(CaptureURLRegex)
-      const logoutURL = `${ParsedURL[1]}/auth/realms/standard/protocol/openid-connect/logout`
+      const logoutURL = `${getSAMLIssuer(
+        decodedSAMLResponse
+      )}/protocol/openid-connect/logout`;
 
       $("#logout").html(
         `<a href="${logoutURL}?redirect_uri=${encodeURIComponent(
