@@ -19,7 +19,7 @@ exports.handler = function (event, context, callback) {
 
     callback(null, response)
   }
-
+ 
   else if (event.path == "/" && event.httpMethod == "POST") {
     const fileName = "index.html";
 
@@ -260,12 +260,17 @@ function parseSAMLResponse(samlResponse) {
 ////// Azure AD migration functions //////
 //////////////////////////////////////////
 
-// TODO: delete this after migration from Siteminder IDIR IDP to Azure AD IDIR IDP is complete
+// TODO: delete this after migration from Silver Keycloack to gold Keycloack cluster is complete
 
-const kc_realm = process.env.kc_realm;
-const kc_base_url = process.env.kc_base_url;
-const kc_terraform_auth_client_id = process.env.kc_terraform_auth_client_id;
-const kc_terraform_auth_client_secret = process.env.kc_terraform_auth_client_secret;
+let kc_base_url = process.env.kc_base_url;
+let kc_realm  = process.env.kc_realm;
+let kc_terraform_auth_client_id = process.env.kc_terraform_auth_client_id;
+let kc_terraform_auth_client_secret = process.env.kc_terraform_auth_client_secret;
+
+let silver_kc_base_url = process.env.silver_kc_base_url;
+let silver_kc_realm  = process.env.silver_kc_realm;
+let silver_kc_terraform_auth_client_id = process.env.silver_kc_terraform_auth_client_id;
+let silver_kc_terraform_auth_client_secret = process.env.silver_kc_terraform_auth_client_secret;
 
 function checkSAMLForAzureIDP(saml_response) {
   return saml_response.includes("@azureidir");
@@ -302,6 +307,24 @@ function makeHttpRequest(options, post_data) {
   });
 }
 
+async function getSilverKeyCloakToken() {
+  let options = {
+    'method': 'POST',
+    'hostname': silver_kc_base_url,
+    'path': '/auth/realms/' + silver_kc_realm + '/protocol/openid-connect/token',
+    'headers': {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    'maxRedirects': 20
+  };
+  let post_data = qs.stringify({
+    'client_id': silver_kc_terraform_auth_client_id,
+    'client_secret': silver_kc_terraform_auth_client_secret,
+    'grant_type': 'client_credentials'
+  });
+  return makeHttpRequest(options, post_data);
+}
+
 async function getKeyCloakToken() {
   let options = {
     'method': 'POST',
@@ -320,6 +343,18 @@ async function getKeyCloakToken() {
   return makeHttpRequest(options, post_data);
 }
 
+async function getSilverUsersWithEmail(SilverHeaders, target_user_email) {
+  let options = {
+    'method': 'GET',
+    'hostname': silver_kc_base_url,
+    'path': '/auth/admin/realms/' + silver_kc_realm + '/users?email=' + target_user_email,
+    'headers': SilverHeaders,
+    'maxRedirects': 20
+  };
+  let post_data = qs.stringify({});
+  return makeHttpRequest(options, post_data);
+}
+
 async function getUsersWithEmail(headers, target_user_email) {
   let options = {
     'method': 'GET',
@@ -332,16 +367,45 @@ async function getUsersWithEmail(headers, target_user_email) {
   return makeHttpRequest(options, post_data);
 }
 
-async function getSiteminderUserGroups(headers, siteminder_user_id) {
+async function getSilverUserGroups(SilverHeaders, silver_user_id) {
   let options = {
     'method': 'GET',
-    'hostname': kc_base_url,
-    'path': '/auth/admin/realms/' + kc_realm + '/users/' + siteminder_user_id + '/groups',
-    'headers': headers,
+    'hostname': silver_kc_base_url,
+    'path': '/auth/admin/realms/' + silver_kc_realm + '/users/' + silver_user_id + '/groups',
+    'headers': SilverHeaders,
     'maxRedirects': 20
   };
   let post_data = qs.stringify({});
   return makeHttpRequest(options, post_data);
+}
+
+async function getGroups(headers) {
+  let options = {
+      'method': 'GET',
+      'hostname': kc_base_url,
+      'path': '/auth/admin/realms/' + kc_realm + '/groups',
+      'headers': headers,
+      'maxRedirects': 20
+  };
+  let post_data = qs.stringify({});
+  return makeHttpRequest(options, post_data);
+  }
+
+function findIdByPath(obj, pathString) {
+  let result = null;
+    
+      const searchObj = (o) => {
+      for (let key in o) {
+          const value = o[key];
+          if (typeof value === 'object') {
+          searchObj(value);
+          } else if (key === 'path' && value.includes(pathString)) {
+          result = {"id": o.id, "path": o.path}
+          }
+        }
+      };
+  searchObj(obj);
+  return result;
 }
 
 async function putAzureADUserGroup(headers, azure_ad_user_id, group_id) {
@@ -356,15 +420,13 @@ async function putAzureADUserGroup(headers, azure_ad_user_id, group_id) {
   return makeHttpRequest(options, post_data);
 }
 
-async function disableSiteminderUser(headers, siteminder_user_id) {
-
-  headers['Content-Type'] = 'application/json';
-
+async function disableSilverUser(SilverHeaders, silver_user_id) {
+  SilverHeaders['Content-Type'] = 'application/json';
   let options = {
     'method': 'PUT',
-    'hostname': kc_base_url,
-    'path': '/auth/admin/realms/' + kc_realm + '/users/' + siteminder_user_id,
-    'headers': headers,
+    'hostname': silver_kc_base_url,
+    'path': '/auth/admin/realms/' + silver_kc_realm + '/users/' + silver_user_id,
+    'headers': SilverHeaders,
     'maxRedirects': 20
   };
   var post_data = JSON.stringify({
@@ -374,7 +436,14 @@ async function disableSiteminderUser(headers, siteminder_user_id) {
 }
 
 async function transferKeyCloakGroups(saml_response) {
-  console.log("In transferKeyCloakGroups(), transferring groups from Sitminder IDP user to Azure AD IDP user");
+  console.log("In transferKeyCloakGroups(), transferring groups from Silver keycloack cluster user to Gold keycloack cluster user");
+
+  let silver_token_response = await getSilverKeyCloakToken();
+  console.log("Retrieved Silver Token is: " + JSON.parse(silver_token_response).access_token);
+  let SilverHeaders = {
+    'Authorization': 'Bearer ' + JSON.parse(silver_token_response).access_token,
+    'Content-Type': 'application/x-www-form-urlencoded'
+  };
 
   let token_response = await getKeyCloakToken();
   console.log("Retrieved Token is: " + JSON.parse(token_response).access_token);
@@ -384,27 +453,54 @@ async function transferKeyCloakGroups(saml_response) {
   };
 
   let target_user_email = parseSAMLForEmail(saml_response);
-  let user_array_response = await getUsersWithEmail(headers, target_user_email);
-  console.log("Retrieved User List is: " + user_array_response);
 
-  let common_email_users = JSON.parse(user_array_response);
-  common_email_users.forEach(async function (user_a) {
-    if (user_a.username.includes('@idir')) {
-      let siteminder_user_groups_response = await getSiteminderUserGroups(headers, user_a.id);
-      console.log('Sitminder User Groups are: ' + siteminder_user_groups_response);
-      let siteminder_user_groups = JSON.parse(siteminder_user_groups_response);
+  let silver_user_response = await getSilverUsersWithEmail(SilverHeaders, target_user_email);
+  console.log("Retrieved User is: " + silver_user_response);
+  let silver_users = JSON.parse(silver_user_response);
 
-      console.log('Transferring Groups');
-      common_email_users.forEach(async function (user_b) {
-        if (user_b.username.includes('@azureidir')) {
-          siteminder_user_groups.forEach(async function (group) {
-            await putAzureADUserGroup(headers, user_b.id, group.id);
-          });
-          console.log('Disabling Siteminder User');
-          await disableSiteminderUser(headers, user_a.id);
-        }
-      });
+  // Check wether or not the migration has already been done.
+  const filteredUsers = silver_users.filter(user => user.username.includes("@azureidir"));
+  for (const user of filteredUsers) {
+    if (user.enabled === true) {
+      console.log(`${user.username} enabled proceeding with migration`);
+    } else if (user.enabled === false) {
+      console.log(`${user.username} disabled no need to migrate, exiting.`);
+      process.exit(0);
+    } else {
+      console.error(`Error: unable to determine ${user.username} enabled/disabled state`);
+      process.exit(1);
     }
+  }
+
+  let gold_user_response = await getUsersWithEmail(headers, target_user_email);
+  console.log("Retrieved User is: " + gold_user_response);
+  let gold_users = JSON.parse(gold_user_response);
+
+  silver_users.forEach(async function (silver_user) {
+  if (silver_user.username.includes('@azureidir')) {
+    let silver_user_groups_response = await getSilverUserGroups(SilverHeaders, silver_user.id);
+    console.log('Silver User Groups are: ' + silver_user_groups_response);
+    let silver_user_groups = JSON.parse(silver_user_groups_response);
+
+    console.log('Transferring Groups');
+    let groups_response = await getGroups(headers);
+    let groups = groups_response.toString('utf8')
+    silver_user_groups.forEach(async function (group) {
+      gold_users.forEach(async function (gold_user) {
+          let group_id=await findIdByPath(JSON.parse(groups),group.path);
+          if (group_id === null) {
+            console.log("Group ID not found for group path: " + group.path);
+          } else {
+            console.log("adding user to group : " + group_id.path)
+            await putAzureADUserGroup(headers, gold_user.id, group_id.id);
+          }
+        });
+      });
+
+      console.log('Disabling Silver User');
+      await disableSilverUser(SilverHeaders, silver_user.id);
+  }
   });
+
   console.log("Finished transferring groups from Sitminder IDP user to Azure AD IDP user");
 }

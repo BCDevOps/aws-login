@@ -21,11 +21,15 @@ resource "aws_lambda_function" "samlpost" {
 
   environment {
     variables = {
-      samlReadRole                    = "arn:aws:iam::${local.master_account_id}:saml-provider/${var.keycloak_saml_name},arn:aws:iam::${local.master_account_id}:role/${local.saml_read_role_name}",
-      kc_base_url                     = var.kc_base_url,
-      kc_realm                        = var.kc_realm,
-      kc_terraform_auth_client_id     = var.kc_terraform_auth_client_id,
-      kc_terraform_auth_client_secret = var.kc_terraform_auth_client_secret
+      samlReadRole                           = "arn:aws:iam::${local.master_account_id}:saml-provider/${var.keycloak_saml_name},arn:aws:iam::${local.master_account_id}:role/${local.saml_read_role_name}",
+      kc_base_url                            = var.kc_base_url,
+      kc_realm                               = var.kc_realm,
+      kc_terraform_auth_client_id            = var.kc_terraform_auth_client_id,
+      kc_terraform_auth_client_secret        = var.kc_terraform_auth_client_secret
+      silver_kc_realm                        = var.silver_kc_realm
+      silver_kc_base_url                     = var.silver_kc_base_url
+      silver_kc_terraform_auth_client_id     = var.silver_kc_terraform_auth_client_id
+      silver_kc_terraform_auth_client_secret = var.silver_kc_terraform_auth_client_secret
     }
   }
 
