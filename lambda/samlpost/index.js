@@ -7,7 +7,7 @@ let https = require('https');
 var qs = require('querystring');
 
 exports.handler = function (event, context, callback) {
-  if (event.path == "/redirect" && event.httpMethod == "GET") {
+  if ((event.path == "/redirect" && event.httpMethod == "GET") || (event.path == "/" && event.httpMethod == "GET")) {
     const kc_base_url = process.env.kc_base_url;
     const kc_realm = process.env.kc_realm;
     const response = {
