@@ -463,44 +463,43 @@ async function transferKeyCloakGroups(saml_response) {
   for (const user of filteredUsers) {
     if (user.enabled === true) {
       console.log(`${user.username} enabled proceeding with migration`);
+
+      let gold_user_response = await getUsersWithEmail(headers, target_user_email);
+      console.log("Retrieved User is: " + gold_user_response);
+      let gold_users = JSON.parse(gold_user_response);
+    
+      silver_users.forEach(async function (silver_user) {
+      if (silver_user.username.includes('@azureidir')) {
+        let silver_user_groups_response = await getSilverUserGroups(SilverHeaders, silver_user.id);
+        console.log('Silver User Groups are: ' + silver_user_groups_response);
+        let silver_user_groups = JSON.parse(silver_user_groups_response);
+    
+        console.log('Transferring Groups');
+        let groups_response = await getGroups(headers);
+        let groups = groups_response.toString('utf8')
+        silver_user_groups.forEach(async function (group) {
+          gold_users.forEach(async function (gold_user) {
+              let group_id=await findIdByPath(JSON.parse(groups),group.path);
+              if (group_id === null) {
+                console.log("Group ID not found for group path: " + group.path);
+              } else {
+                console.log("adding user to group : " + group_id.path)
+                await putAzureADUserGroup(headers, gold_user.id, group_id.id);
+              }
+            });
+          });
+    
+          console.log('Disabling Silver User');
+          await disableSilverUser(SilverHeaders, silver_user.id);
+      }
+      });
     } else if (user.enabled === false) {
       console.log(`${user.username} disabled no need to migrate, exiting.`);
-      process.exit(0);
     } else {
       console.error(`Error: unable to determine ${user.username} enabled/disabled state`);
-      process.exit(1);
     }
   }
 
-  let gold_user_response = await getUsersWithEmail(headers, target_user_email);
-  console.log("Retrieved User is: " + gold_user_response);
-  let gold_users = JSON.parse(gold_user_response);
-
-  silver_users.forEach(async function (silver_user) {
-  if (silver_user.username.includes('@azureidir')) {
-    let silver_user_groups_response = await getSilverUserGroups(SilverHeaders, silver_user.id);
-    console.log('Silver User Groups are: ' + silver_user_groups_response);
-    let silver_user_groups = JSON.parse(silver_user_groups_response);
-
-    console.log('Transferring Groups');
-    let groups_response = await getGroups(headers);
-    let groups = groups_response.toString('utf8')
-    silver_user_groups.forEach(async function (group) {
-      gold_users.forEach(async function (gold_user) {
-          let group_id=await findIdByPath(JSON.parse(groups),group.path);
-          if (group_id === null) {
-            console.log("Group ID not found for group path: " + group.path);
-          } else {
-            console.log("adding user to group : " + group_id.path)
-            await putAzureADUserGroup(headers, gold_user.id, group_id.id);
-          }
-        });
-      });
-
-      console.log('Disabling Silver User');
-      await disableSilverUser(SilverHeaders, silver_user.id);
-  }
-  });
 
   console.log("Finished transferring groups from Sitminder IDP user to Azure AD IDP user");
 }
