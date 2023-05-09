@@ -39,6 +39,30 @@ variable "kc_terraform_auth_client_secret" {
   default     = ""
 }
 
+variable "silver_kc_realm" {
+  description = "Silver keycloack cluster realm name"
+  type = string
+  default = ""
+}
+
+variable "silver_kc_base_url" {
+  description = "Silver keycloack cluster base url"
+  type = string
+  default = ""
+}
+
+variable "silver_kc_terraform_auth_client_id" {
+  description = "Silver keycloack cluster client name"
+  type = string
+  default = ""
+}
+
+variable "silver_kc_terraform_auth_client_secret" {
+  description = "Silver keycloack cluster client password"
+  type = string
+  default = ""
+}
+
 variable "domain_name" {
   description = "Domain name of the login app"
   type        = string
