@@ -276,7 +276,7 @@ function checkSAMLForAzureIDP(saml_response) {
   return saml_response.includes("@azureidir");
 }
 
-function parseSAMLForEmail(saml_response) {
+function parseSAMLForUsername(saml_response) {
   let capturing_regex = new RegExp(">\\S+@azureidir<", "gm");
   let matches = saml_response.match(capturing_regex);
   let email = matches[0].replace('>', '').replace('@azureidir<', '')
@@ -360,6 +360,18 @@ async function getUsersWithEmail(headers, target_user_email) {
     'method': 'GET',
     'hostname': kc_base_url,
     'path': '/auth/admin/realms/' + kc_realm + '/users?email=' + target_user_email,
+    'headers': headers,
+    'maxRedirects': 20
+  };
+  let post_data = qs.stringify({});
+  return makeHttpRequest(options, post_data);
+}
+
+async function getUsersWithUsername(headers, target_user_username) {
+  let options = {
+    'method': 'GET',
+    'hostname': kc_base_url,
+    'path': '/auth/admin/realms/' + kc_realm + '/users?username=' + target_user_username,
     'headers': headers,
     'maxRedirects': 20
   };
@@ -452,9 +464,12 @@ async function transferKeyCloakGroups(saml_response) {
     'Content-Type': 'application/x-www-form-urlencoded'
   };
 
-  let target_user_email = parseSAMLForEmail(saml_response);
+  let target_user_username = parseSAMLForUsername(saml_response);
+  let gold_user_response = await getUsersWithUsername(headers, target_user_username);
+  let gold_users = JSON.parse(gold_user_response);
+  console.log("gold_users=" + gold_users)
 
-  let silver_user_response = await getSilverUsersWithEmail(SilverHeaders, target_user_email);
+  let silver_user_response = await getSilverUsersWithEmail(SilverHeaders, gold_users[0].email);
   console.log("Retrieved User is: " + silver_user_response);
   let silver_users = JSON.parse(silver_user_response);
 
@@ -464,7 +479,7 @@ async function transferKeyCloakGroups(saml_response) {
     if (user.enabled === true) {
       console.log(`${user.username} enabled proceeding with migration`);
 
-      let gold_user_response = await getUsersWithEmail(headers, target_user_email);
+      let gold_user_response = await getUsersWithUsername(headers, target_user_username);
       console.log("Retrieved User is: " + gold_user_response);
       let gold_users = JSON.parse(gold_user_response);
     
