@@ -286,6 +286,10 @@
 
       $("button.click-console").click(function () {
         let data = $(this).parents("tr.account-role").first().data();
+        signoutwindow = window.open("https://console.aws.amazon.com/console/logout!doLogout");
+        setTimeout(function () {
+          signoutwindow.close();
+        }, 1000);
         consoleSignIn(data);
       });
     }
