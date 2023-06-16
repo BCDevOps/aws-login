@@ -194,12 +194,12 @@
         decodedSAMLResponse
       )}/protocol/saml/clients/amazon-aws`;
 
-      const samlIssuerURL = getSAMLIssuer(decodedSAMLResponse)
+      const samlIssuerURL = getSAMLIssuer(decodedSAMLResponse);
       const CaptureURLRegex = new RegExp(
         "((http[s]):\\/?\\/?[^:\\/\\s]+)(\\/\\w+)*\\/[\\w\\-\\.]+[^#?\\s]+.*?(#[\\w\\-]+)?$"
-      )
-      let ParsedURL = samlIssuerURL.match(CaptureURLRegex)
-      const logoutURL = `${ParsedURL[1]}/auth/realms/standard/protocol/openid-connect/logout`
+      );
+      let ParsedURL = samlIssuerURL.match(CaptureURLRegex);
+      const logoutURL = `${ParsedURL[1]}/auth/realms/standard/protocol/openid-connect/logout`;
 
       $("#logout").html(
         `<a href="${logoutURL}?redirect_uri=${encodeURIComponent(
@@ -395,12 +395,18 @@
         SAMLAssertion: samlResponse,
       };
 
+      // Sign out of the console first
+      new_window = window.open(
+        "https://console.aws.amazon.com/console/logout!doLogout"
+      );
+
+      // Then sign in
       $.ajax({
         type: "POST",
         url: "/api/consolelogin",
         data: JSON.stringify(params),
         success: function (data, textStatus, jqXHR) {
-          window.open(data.Location);
+          new_window.location.replace(data.Location);
         },
         dataType: "json",
       });
@@ -502,10 +508,7 @@
           Accounts
         </button>
 
-        <button
-          class="tablinks"
-          onclick="activateTab(event, 'services')"
-        >
+        <button class="tablinks" onclick="activateTab(event, 'services')">
           Supported Services
         </button>
 
@@ -555,9 +558,21 @@
 
       <div id="external-dashboard" class="tabcontent">
         <ul>
-          <li><a href="https://status.aws.amazon.com" target="_blank">AWS Status Page (please connect to an aws account first)</a></li>
-          <li><a href="https://status.hashicorp.com" target="_blank">Terraform Status Page</a></li>
-          <li><a href="https://www.githubstatus.com" target="_blank">GitHub Status Page</a></li>
+          <li>
+            <a href="https://status.aws.amazon.com" target="_blank"
+              >AWS Status Page (please connect to an aws account first)</a
+            >
+          </li>
+          <li>
+            <a href="https://status.hashicorp.com" target="_blank"
+              >Terraform Status Page</a
+            >
+          </li>
+          <li>
+            <a href="https://www.githubstatus.com" target="_blank"
+              >GitHub Status Page</a
+            >
+          </li>
         </ul>
       </div>
 
