@@ -3,12 +3,12 @@ locals {
 }
 
 data "aws_route53_zone" "this" {
-  provider = aws.perimeter-account
+  provider = aws.Perimeter-account
   name     = var.domain_name
 }
 
 resource "aws_route53_record" "login_app" {
-  provider = aws.perimeter-account
+  provider = aws.Perimeter-account
   zone_id  = data.aws_route53_zone.this.zone_id
   name     = "login.${var.domain_name}"
   type     = "A"
@@ -31,7 +31,7 @@ resource "aws_acm_certificate" "this" {
 }
 
 resource "aws_route53_record" "this_acm" {
-  provider = aws.perimeter-account
+  provider = aws.Perimeter-account
   for_each = {
     for dvo in aws_acm_certificate.this.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name

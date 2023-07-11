@@ -60,6 +60,7 @@ resource "aws_iam_role" "lambda_exec" {
 
 
 data "aws_iam_policy" "AWSLambdaBasicExecutionRole" {
+  provider = aws.master-account
   arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
