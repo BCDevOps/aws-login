@@ -1,53 +1,12 @@
-# Configure the AWS Provider
-// set up a default region to work around bug that prompts for region otherwise :(
-provider "aws" {
-  region = "ca-central-1"
-}
-
-provider "aws" {
-  region = "ca-central-1"
-  alias  = "root-account"
-}
-
-provider "aws" {
-  region = "ca-central-1"
-  alias  = "iam-security-account"
-
-  assume_role {
-    role_arn     = "arn:aws:iam::${local.iam_security_account.id}:role/AWSCloudFormationStackSetExecutionRole"
-    session_name = "slz-terraform-automation"
-  }
-}
-
-provider "aws" {
-  region = "us-east-1"
-  alias  = "iam-security-account-us-east-1"
-
-  assume_role {
-    role_arn     = "arn:aws:iam::${local.iam_security_account.id}:role/AWSCloudFormationStackSetExecutionRole"
-    session_name = "slz-terraform-automation"
-  }
-}
-
-provider "aws" {
-  region = "ca-central-1"
-  alias  = "perimeter-account"
-
-  assume_role {
-    role_arn     = "arn:aws:iam::${local.perimeter_account.id}:role/AWSCloudFormationStackSetExecutionRole"
-    session_name = "slz-terraform-automation"
-  }
-}
-
 module "lz_info" {
   source = "github.com/BCDevOps/terraform-aws-sea-organization-info"
   providers = {
-    aws = aws.root-account
+    aws = aws.master-account
   }
 }
 
 data "aws_caller_identity" "master_account_caller" {
-  provider = aws.root-account
+  provider = aws.master-account
 }
 
 
@@ -71,7 +30,7 @@ locals {
 }
 
 resource "aws_iam_role" "saml_read_role" {
-  provider = aws.root-account
+  provider = aws.master-account
   name     = local.saml_read_role_name
 
   assume_role_policy = <<EOF
@@ -91,7 +50,7 @@ EOF
 }
 
 resource "aws_iam_role_policy" "saml_read_role_policy" {
-  provider = aws.root-account
+  provider = aws.master-account
 
   name = "saml_user_account_readpolicy"
   role = aws_iam_role.saml_read_role.id
