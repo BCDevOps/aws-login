@@ -64,6 +64,12 @@ exports.handler = function (event, context, callback) {
 
     callback(null, response);
   } else if (event.path == "/accounttags" && event.httpMethod == "POST") {
+    let tagsToDisplay = [
+      "Project",
+      "Environment",
+      "admin_contact_name",
+      "admin_contact_email",
+    ];
     if (event.body) {
       let body = JSON.parse(event.body);
 
@@ -136,12 +142,6 @@ exports.handler = function (event, context, callback) {
             );
           };
 
-          tagsToDisplay = [
-            "Project",
-            "Environment",
-            "admin_contact_name",
-            "admin_contact_email",
-          ];
           getTagsForAccounts(accounts, organizations, tagsToDisplay)
             .then((values) => {
               let returnVal = {};
