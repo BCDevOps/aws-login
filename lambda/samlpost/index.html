@@ -313,6 +313,30 @@
             let tags = data[rowData].tags;
 
             let table = $("<table>").css("font-size", "12px");
+
+            const tagOrder = [
+              "Project",
+              "Environment",
+              "admin_contact_name",
+              "admin_contact_email",
+            ];
+
+            // Sort tags by predefined key order
+            tags.sort((a, b) => {
+              const aIndex = tagOrder.indexOf(a.Key);
+              const bIndex = tagOrder.indexOf(b.Key);
+
+              if (aIndex < bIndex) {
+                return -1;
+              }
+
+              if (aIndex > bIndex) {
+                return 1;
+              }
+
+              return 0;
+            });
+
             tags.forEach((tag) =>
               table.append(
                 '<tr><td style="font-weight: bold; text-align: right">' +
