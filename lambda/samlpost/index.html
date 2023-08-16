@@ -1,619 +1,769 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="Custom AWS SAML Response SignIn Page" />
-    <title>AWS SAML SignIn</title>
-    <style>
-      @font-face {
-        font-family: "BC Sans";
-        src: url("https://www2.gov.bc.ca/StaticWebResources/static/shared/fonts/BCSans/BCSans-Bold.woff");
-        font-weight: normal;
-        font-style: normal;
-      }
 
-      header {
-        background-color: #036;
-        border-bottom: 2px solid #fcba19;
-        padding: 0 65px 0 65px;
-        color: #fff;
-        display: flex;
-        height: 65px;
-        /*top: 0px;*/
-        /*position: fixed;*/
-        width: 100%;
-      }
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="description" content="Custom AWS SAML Response SignIn Page" />
+  <title>AWS SAML SignIn</title>
+  <style>
+    @font-face {
+      font-family: "BC Sans";
+      src: url("https://www2.gov.bc.ca/StaticWebResources/static/shared/fonts/BCSans/BCSans-Bold.woff");
+      font-weight: normal;
+      font-style: normal;
+    }
 
-      header h1 {
-        font-family: ‘BC Sans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
-        font-weight: normal; /* 400 */
-        margin: 5px 5px 0 18px;
-        visibility: hidden;
-      }
+    header {
+      background-color: #036;
+      border-bottom: 2px solid #fcba19;
+      padding: 0 65px 0 65px;
+      color: #fff;
+      display: flex;
+      height: 65px;
+      /*top: 0px;*/
+      /*position: fixed;*/
+      width: 100%;
+    }
 
-      header .banner {
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        margin: 0 10px 0 0;
-        /* border-style: dotted;
+    header h1 {
+      font-family: ‘BC Sans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
+      font-weight: normal;
+      /* 400 */
+      margin: 5px 5px 0 18px;
+      visibility: hidden;
+    }
+
+    header .banner {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin: 0 10px 0 0;
+      /* border-style: dotted;
         border-width: 1px;
         border-color: lightgrey; */
-      }
+    }
 
-      header .other {
-        display: flex;
-        flex-grow: 1;
-        /* border-style: dotted;
+    header .other {
+      display: flex;
+      flex-grow: 1;
+      /* border-style: dotted;
         border-width: 1px;
         border-color: lightgrey; */
-      }
+    }
 
-      /* body {
+    /* body {
         overflow: hidden;
       } */
 
-      footer {
-        background-color: #036;
-        border-top: 2px solid #fcba19;
-        color: #fff;
-        font-family: ‘BCSans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
-        position: fixed;
-        bottom: 0;
-        width: 100%;
+    footer {
+      background-color: #036;
+      border-top: 2px solid #fcba19;
+      color: #fff;
+      font-family: ‘BCSans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+    }
+
+    footer .container {
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      height: 46px;
+    }
+
+    footer ul {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      margin: 0;
+      color: #fff;
+      list-style: none;
+      align-items: center;
+      height: 100%;
+    }
+
+    footer ul li a {
+      font-size: 0.813em;
+      font-weight: normal;
+      color: #fff;
+      border-right: 1px solid #4b5e7e;
+      padding-left: 5px;
+      padding-right: 5px;
+    }
+
+    .tab {
+      overflow: hidden;
+      border: 1px solid #ccc;
+      background-color: #f1f1f1;
+    }
+
+    .tab button {
+      background-color: inherit;
+      float: left;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      transition: 0.3s;
+    }
+
+    .tab button:hover {
+      background-color: #ddd;
+    }
+
+    .tab button.active {
+      background-color: #ccc;
+    }
+
+    .tabcontent {
+      display: none;
+      padding: 6px 12px;
+      border: 1px solid #ccc;
+      border-top: none;
+    }
+
+    a:hover {
+      /* color: #fff; */
+      text-decoration: underline;
+    }
+
+    a.button {
+      -webkit-appearance: button;
+      -moz-appearance: button;
+      appearance: button;
+
+      text-decoration: none;
+      color: initial;
+
+      background-color: inherit;
+      float: right;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      transition: 0.3s;
+    }
+
+    :focus {
+      outline: 4px solid #3b99fc;
+      outline-offset: 1px;
+    }
+
+    @media screen and (min-width: 600px) and (max-width: 899px) {
+      header h1 {
+        font-size: calc(7px + 2.2vw);
+        visibility: visible;
       }
+    }
 
-      footer .container {
-        display: flex;
-        justify-content: center;
-        flex-direction: column;
-        text-align: center;
-        height: 46px;
+    @media screen and (min-width: 900px) {
+      header h1 {
+        font-size: 2em;
+        visibility: visible;
       }
+    }
+  </style>
+  <link href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css" rel="stylesheet" type="text/css" />
+</head>
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.663.0.min.js"></script>
+<script type="text/javascript">
+  let accountInfo = null;
+  let samlResponse = null;
+  let samlSessionExpiration = null;
 
-      footer ul {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        margin: 0;
-        color: #fff;
-        list-style: none;
-        align-items: center;
-        height: 100%;
-      }
+  const serverless_saml_user_account_read_role =
+    "##serverless_saml_user_account_read_role##";
 
-      footer ul li a {
-        font-size: 0.813em;
-        font-weight: normal;
-        color: #fff;
-        border-right: 1px solid #4b5e7e;
-        padding-left: 5px;
-        padding-right: 5px;
-      }
+  $(document).ready(function () {
+    activateTab(null, "content");
+    $("#accounts-btn").toggleClass("active");
 
-      .tab {
-        overflow: hidden;
-        border: 1px solid #ccc;
-        background-color: #f1f1f1;
-      }
+    samlResponse = $("input[name='SAMLResponse']").first().val();
 
-      .tab button {
-        background-color: inherit;
-        float: left;
-        border: none;
-        outline: none;
-        cursor: pointer;
-        padding: 14px 16px;
-        transition: 0.3s;
-      }
+    const decodedSAMLResponse = atob(samlResponse);
 
-      .tab button:hover {
-        background-color: #ddd;
-      }
+    const samlClient = `${getSAMLIssuer(
+      decodedSAMLResponse
+    )}/protocol/saml/clients/amazon-aws`;
 
-      .tab button.active {
-        background-color: #ccc;
-      }
+    const samlIssuerURL = getSAMLIssuer(decodedSAMLResponse);
+    const CaptureURLRegex = new RegExp(
+      "((http[s]):\\/?\\/?[^:\\/\\s]+)(\\/\\w+)*\\/[\\w\\-\\.]+[^#?\\s]+.*?(#[\\w\\-]+)?$"
+    );
+    let ParsedURL = samlIssuerURL.match(CaptureURLRegex);
+    const logoutURL = `${ParsedURL[1]}/auth/realms/standard/protocol/openid-connect/logout`;
 
-      .tabcontent {
-        display: none;
-        padding: 6px 12px;
-        border: 1px solid #ccc;
-        border-top: none;
-      }
+    $("#logout").html(
+      `<a href="${logoutURL}?redirect_uri=${encodeURIComponent(
+        samlClient
+      )}" class="button">Logout</a>`
+    );
 
-      a:hover {
-        /* color: #fff; */
-        text-decoration: underline;
-      }
-
-      a.button {
-        -webkit-appearance: button;
-        -moz-appearance: button;
-        appearance: button;
-
-        text-decoration: none;
-        color: initial;
-
-        background-color: inherit;
-        float: right;
-        border: none;
-        outline: none;
-        cursor: pointer;
-        padding: 14px 16px;
-        transition: 0.3s;
-      }
-
-      :focus {
-        outline: 4px solid #3b99fc;
-        outline-offset: 1px;
-      }
-
-      @media screen and (min-width: 600px) and (max-width: 899px) {
-        header h1 {
-          font-size: calc(7px + 2.2vw);
-          visibility: visible;
-        }
-      }
-
-      @media screen and (min-width: 900px) {
-        header h1 {
-          font-size: 2em;
-          visibility: visible;
-        }
-      }
-    </style>
-    <link
-      href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css"
-      rel="stylesheet"
-      type="text/css"
-    />
-  </head>
-  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <script src="https://sdk.amazonaws.com/js/aws-sdk-2.663.0.min.js"></script>
-  <script type="text/javascript">
-    let accountInfo = null;
-    let samlResponse = null;
-    let samlSessionExpiration = null;
-
-    const serverless_saml_user_account_read_role =
-      "##serverless_saml_user_account_read_role##";
-
-    $(document).ready(function () {
-      activateTab(null, "content");
-      $("#accounts-btn").toggleClass("active");
-
-      samlResponse = $("input[name='SAMLResponse']").first().val();
-
-      const decodedSAMLResponse = atob(samlResponse);
-
-      const samlClient = `${getSAMLIssuer(
-        decodedSAMLResponse
-      )}/protocol/saml/clients/amazon-aws`;
-
-      const samlIssuerURL = getSAMLIssuer(decodedSAMLResponse);
-      const CaptureURLRegex = new RegExp(
-        "((http[s]):\\/?\\/?[^:\\/\\s]+)(\\/\\w+)*\\/[\\w\\-\\.]+[^#?\\s]+.*?(#[\\w\\-]+)?$"
+    samlSessionExpiration = getSAMLExpiration(decodedSAMLResponse);
+    intervalID = setInterval(() => {
+      const remaining = Math.floor(
+        (samlSessionExpiration - Date.now()) / 1000
       );
-      let ParsedURL = samlIssuerURL.match(CaptureURLRegex);
-      const logoutURL = `${ParsedURL[1]}/auth/realms/standard/protocol/openid-connect/logout`;
-
-      $("#logout").html(
-        `<a href="${logoutURL}?redirect_uri=${encodeURIComponent(
-          samlClient
-        )}" class="button">Logout</a>`
-      );
-
-      samlSessionExpiration = getSAMLExpiration(decodedSAMLResponse);
-      intervalID = setInterval(() => {
-        const remaining = Math.floor(
-          (samlSessionExpiration - Date.now()) / 1000
+      if (remaining > 0) {
+        $("#sessiontimer").html(
+          `<p>Session Time Remaining: ${remaining}</p>`
         );
-        if (remaining > 0) {
-          $("#sessiontimer").html(
-            `<p>Session Time Remaining: ${remaining}</p>`
-          );
-        } else {
-          clearInterval(intervalID);
-          $("#sessiontimer").html(
-            `<p>Session Expired: <a href="${samlClient}">Refresh</a></p>`
-          );
-          $("#awsaccounts").empty();
-        }
-      }, 1000);
+      } else {
+        clearInterval(intervalID);
+        $("#sessiontimer").html(
+          `<p>Session Expired: <a href="${samlClient}">Refresh</a></p>`
+        );
+        $("#awsaccounts").empty();
+      }
+    }, 1000);
 
-      accountInfo = parseSAMLResponse(decodedSAMLResponse);
+    accountInfo = parseSAMLResponse(decodedSAMLResponse);
 
-      renderDialog();
-      renderAccounts(accountInfo);
+    renderDialog();
+    renderAccounts(accountInfo);
 
-      getAccountMetadata(samlResponse);
-    });
+    getAccountMetadata(samlResponse);
+  });
 
-    function renderDialog() {
-      $("#content").append(
-        '<div id="dialog" title="AWS Credentials"> \
+  function renderDialog() {
+    $("#content").append(
+      '<div id="dialog" title="AWS Credentials"> \
                     <p>Copy and paste the following commands into your shell to set up your AWS CLI environment variables.</p> \
                     <pre style="white-space: pre-wrap;word-wrap: break-word;padding: 1rem;">Loading...</pre> \
                     <button id="copyBtn" type="button" class="click-to-copy">Click to copy</button> \
                     </div>'
-      );
-      $("#dialog").dialog({ autoOpen: false, width: "600px" });
-    }
+    );
+    $("#dialog").dialog({ autoOpen: false, width: "600px" });
+  }
 
-    function renderAccounts(accountInfo) {
-      $.each(accountInfo, function (key, value) {
-        let accordianHeader = $(`<h3>${key}<span></span></h3>`)
-          .addClass("account-header")
-          .data("accountId", key);
+  function renderAccounts(accountInfo) {
+    $.each(accountInfo, function (key, value) {
+      let accordianHeader = $(`<h3>${key}<span></span></h3>`)
+        .addClass("account-header")
+        .data("accountId", key);
 
-        let table = $("<table>").addClass("account-roles");
-        $.each(value, function (k, v) {
-          if (v.roleName == serverless_saml_user_account_read_role) {
-            return;
-          }
-
-          let tr = $("<tr>")
-            .addClass("account-role")
-            .append(
-              `<td><span>${v.roleName}</span></td><td><button class="ui-button ui-widget ui-corner-all click-credentials">Click for Credentials</button></td><td><button class="ui-button ui-widget ui-corner-all click-console">Login to Console</button></td>`
-            );
-
-          tr = tr.data(v);
-
-          table.append(tr);
-        });
-
-        if ($("tr", $(table)).length == 0) {
+      let table = $("<table>").addClass("account-roles");
+      $.each(value, function (k, v) {
+        if (v.roleName == serverless_saml_user_account_read_role) {
           return;
         }
 
-        let div = $(`<div><div class="account-tags"></div></div>`).append(
-          table
-        );
-        $("#awsaccounts").append(accordianHeader).append(div);
+        let tr = $("<tr>")
+          .addClass("account-role")
+          .append(
+            `<td><span>${v.roleName}</span></td><td><button class="ui-button ui-widget ui-corner-all click-credentials">Click for Credentials</button></td><td><button class="ui-button ui-widget ui-corner-all click-console">Login to Console</button></td>`
+          );
+
+        tr = tr.data(v);
+
+        table.append(tr);
       });
 
-      $("#awsaccounts").accordion({ heightStyle: "content" });
+      if ($("tr", $(table)).length == 0) {
+        return;
+      }
 
-      $("button.click-credentials").click(function () {
-        let data = $(this).parents("tr.account-role").first().data();
-        getSTSCredentials(data);
-      });
-
-      $("button.click-console").click(function () {
-        let data = $(this).parents("tr.account-role").first().data();
-        consoleSignIn(data);
-      });
-    }
-
-    function getAccountMetadata(samlResponse) {
-      $("#content").before(
-        '<div id="loadingtags"><h2>Loading tags...</h2><div id="progressbar"></div></div>'
+      let div = $(`<div><div class="account-tags"></div></div>`).append(
+        table
       );
+      $("#awsaccounts").append(accordianHeader).append(div);
+    });
 
-      $("#progressbar").progressbar({
-        value: false,
-      });
+    $("#awsaccounts").accordion({ heightStyle: "content" });
 
-      $.ajax({
-        type: "POST",
-        url: "/api/accounttags",
-        data: JSON.stringify({ samlResponse: samlResponse }),
-        success: function (data, textStatus, jqXHR) {
-          $("#loadingtags").remove();
+    $("button.click-credentials").click(function () {
+      let data = $(this).parents("tr.account-role").first().data();
+      getSTSCredentials(data);
+    });
 
-          $("h3.account-header").each(function (index, value) {
-            let rowData = $(value).data("accountId");
-            $("span", value).text(` - ${data[rowData].accountName}`);
+    $("button.click-console").click(function () {
+      let data = $(this).parents("tr.account-role").first().data();
+      consoleSignIn(data);
+    });
+  }
 
-            let tags = data[rowData].tags;
+  function getAccountMetadata(samlResponse) {
+    $("#content").before(
+      '<div id="loadingtags"><h2>Loading tags...</h2><div id="progressbar"></div></div>'
+    );
 
-            let table = $("<table>").css("font-size", "12px");
+    $("#progressbar").progressbar({
+      value: false,
+    });
 
-            const tagOrder = [
-              "Project",
-              "Environment",
-              "admin_contact_name",
-              "admin_contact_email",
-            ];
+    $.ajax({
+      type: "POST",
+      url: "/api/accounttags",
+      data: JSON.stringify({ samlResponse: samlResponse }),
+      success: function (data, textStatus, jqXHR) {
+        $("#loadingtags").remove();
 
-            // Sort tags by predefined key order
-            tags.sort((a, b) => {
-              const aIndex = tagOrder.indexOf(a.Key);
-              const bIndex = tagOrder.indexOf(b.Key);
+        $("h3.account-header").each(function (index, value) {
+          let rowData = $(value).data("accountId");
+          $("span", value).text(` - ${data[rowData].accountName}`);
 
-              if (aIndex < bIndex) {
-                return -1;
-              }
+          let tags = data[rowData].tags;
 
-              if (aIndex > bIndex) {
-                return 1;
-              }
+          let table = $("<table>").css("font-size", "12px");
 
-              return 0;
-            });
+          const tagOrder = [
+            "Project",
+            "Environment",
+            "admin_contact_name",
+            "admin_contact_email",
+          ];
 
-            tags.forEach((tag) =>
-              table.append(
-                '<tr><td style="font-weight: bold; text-align: right">' +
-                  tag.Key +
-                  ":</td><td>" +
-                  tag.Value +
-                  "</td></tr>"
-              )
-            );
+          // Sort tags by predefined key order
+          tags.sort((a, b) => {
+            const aIndex = tagOrder.indexOf(a.Key);
+            const bIndex = tagOrder.indexOf(b.Key);
 
-            $("div.account-tags", $(value).next()).append(table);
+            if (aIndex < bIndex) {
+              return -1;
+            }
+
+            if (aIndex > bIndex) {
+              return 1;
+            }
+
+            return 0;
           });
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-          $("#loadingtags").remove();
-        },
-        dataType: "json",
-      });
-    }
 
-    function getSTSCredentials(awsAccount) {
-      $("#dialog").dialog("open");
+          tags.forEach((tag) =>
+            table.append(
+              '<tr><td style="font-weight: bold; text-align: right">' +
+              tag.Key +
+              ":</td><td>" +
+              tag.Value +
+              "</td></tr>"
+            )
+          );
 
-      $("#dialog pre").first().html("Loading...");
+          $("div.account-tags", $(value).next()).append(table);
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        $("#loadingtags").remove();
+      },
+      dataType: "json",
+    });
+  }
 
-      const providerArn = awsAccount.providerArn;
-      const roleArn = awsAccount.roleArn;
+  function getSTSCredentials(awsAccount) {
+    $("#dialog").dialog("open");
 
-      let sts = new AWS.STS();
-      let params = {
-        DurationSeconds: 21600,
-        PrincipalArn: providerArn,
-        RoleArn: roleArn,
-        SAMLAssertion: samlResponse,
-      };
+    $("#dialog pre").first().html("Loading...");
 
-      sts.assumeRoleWithSAML(params, function (err, data) {
-        if (err) {
-          console.log(err, err.stack);
-          $("#dialog pre")
-            .first()
-            .html("Error: " + err.message);
-        } else {
-          let accessKeyId = data.Credentials.AccessKeyId;
-          let secretKey = data.Credentials.SecretAccessKey;
-          let sessionToken = data.Credentials.SessionToken;
+    const providerArn = awsAccount.providerArn;
+    const roleArn = awsAccount.roleArn;
 
-          let text =
-            'export AWS_ACCESS_KEY_ID="' +
-            accessKeyId +
-            '"\nexport AWS_SECRET_ACCESS_KEY="' +
-            secretKey +
-            '"\nexport AWS_SESSION_TOKEN="' +
-            sessionToken +
-            '"\nexport AWS_DEFAULT_REGION=ca-central-1\n';
+    let sts = new AWS.STS();
+    let params = {
+      DurationSeconds: 21600,
+      PrincipalArn: providerArn,
+      RoleArn: roleArn,
+      SAMLAssertion: samlResponse,
+    };
 
-          $("#dialog pre").first().html(text);
+    sts.assumeRoleWithSAML(params, function (err, data) {
+      if (err) {
+        console.log(err, err.stack);
+        $("#dialog pre")
+          .first()
+          .html("Error: " + err.message);
+      } else {
+        let accessKeyId = data.Credentials.AccessKeyId;
+        let secretKey = data.Credentials.SecretAccessKey;
+        let sessionToken = data.Credentials.SessionToken;
 
-          $("#dialog").on("click", "#copyBtn", function () {
-            let text = $("#dialog pre").text();
-            let $tempInput = $("<textarea>");
-            $("body").append($tempInput);
-            $tempInput.val(text).select();
-            document.execCommand("copy");
-            $tempInput.remove();
-          });
-        }
-      });
-    }
+        let text =
+          'export AWS_ACCESS_KEY_ID="' +
+          accessKeyId +
+          '"\nexport AWS_SECRET_ACCESS_KEY="' +
+          secretKey +
+          '"\nexport AWS_SESSION_TOKEN="' +
+          sessionToken +
+          '"\nexport AWS_DEFAULT_REGION=ca-central-1\n';
 
-    function consoleSignIn(awsAccount) {
-      const providerArn = awsAccount.providerArn;
-      const roleArn = awsAccount.roleArn;
-      const sessionDuration = 21600;
+        $("#dialog pre").first().html(text);
 
-      let params = {
-        DurationSeconds: sessionDuration,
-        PrincipalArn: providerArn,
-        RoleArn: roleArn,
-        SAMLAssertion: samlResponse,
-      };
-
-      // Sign out of the console first
-      new_window = window.open(
-        "https://console.aws.amazon.com/console/logout!doLogout"
-      );
-
-      // Then sign in
-      $.ajax({
-        type: "POST",
-        url: "/api/consolelogin",
-        data: JSON.stringify(params),
-        success: function (data, textStatus, jqXHR) {
-          new_window.location.replace(data.Location);
-        },
-        dataType: "json",
-      });
-    }
-
-    function parseSAMLResponse(samlResponse) {
-      //let capturingRegex = new RegExp(">(?<provider>arn:aws:iam::\\d+:saml-provider/\\S+),(?<role>arn:aws::iam::(?<accountid>\\d+):role/(?<rolename>\\w+))<");
-      let capturingRegex = new RegExp(
-        ">(arn:aws:iam::\\d+:saml-provider/[a-zA-Z0-9-_@=+.]+),(arn:aws:iam::(\\d+):role/([a-zA-Z0-9-_@=+.]+))<",
-        "gi"
-      );
-      ///>(arn:aws:iam::\d+:saml-provider\/\S+),(arn:aws:iam::(\d+):role\/(\w+))</gi
-      let matches = samlResponse.matchAll(capturingRegex);
-
-      let awsAccounts = {};
-      for (const match of matches) {
-        let awsAccount = {};
-        awsAccount.providerArn = match[1];
-        awsAccount.roleArn = match[2];
-
-        awsAccount.roleName = match[4];
-
-        if (awsAccounts[match[3]] == undefined) {
-          awsAccounts[match[3]] = [awsAccount];
-        } else {
-          awsAccounts[match[3]].push(awsAccount);
-        }
+        $("#dialog").on("click", "#copyBtn", function () {
+          let text = $("#dialog pre").text();
+          let $tempInput = $("<textarea>");
+          $("body").append($tempInput);
+          $tempInput.val(text).select();
+          document.execCommand("copy");
+          $tempInput.remove();
+        });
       }
+    });
+  }
 
-      return awsAccounts;
-    }
+  function consoleSignIn(awsAccount) {
+    const providerArn = awsAccount.providerArn;
+    const roleArn = awsAccount.roleArn;
+    const sessionDuration = 21600;
 
-    function getSAMLExpiration(samlResponse) {
-      let parser = new DOMParser();
-      let xmlDoc = parser.parseFromString(samlResponse, "text/xml");
+    let params = {
+      DurationSeconds: sessionDuration,
+      PrincipalArn: providerArn,
+      RoleArn: roleArn,
+      SAMLAssertion: samlResponse,
+    };
 
-      const expStr = xmlDoc
-        .getElementsByTagName("saml:Conditions")[0]
-        .getAttribute("NotOnOrAfter");
-      const session_exp = Date.parse(expStr);
-      return session_exp;
-    }
+    // Sign out of the console first
+    new_window = window.open(
+      "https://console.aws.amazon.com/console/logout!doLogout"
+    );
 
-    function getSAMLIssuer(samlResponse) {
-      let parser = new DOMParser();
-      let xmlDoc = parser.parseFromString(samlResponse, "text/xml");
+    // Then sign in
+    $.ajax({
+      type: "POST",
+      url: "/api/consolelogin",
+      data: JSON.stringify(params),
+      success: function (data, textStatus, jqXHR) {
+        new_window.location.replace(data.Location);
+      },
+      dataType: "json",
+    });
+  }
 
-      const issuer = xmlDoc.getElementsByTagName("saml:Issuer")[0].innerHTML;
-      return issuer;
-    }
+  function parseSAMLResponse(samlResponse) {
+    //let capturingRegex = new RegExp(">(?<provider>arn:aws:iam::\\d+:saml-provider/\\S+),(?<role>arn:aws::iam::(?<accountid>\\d+):role/(?<rolename>\\w+))<");
+    let capturingRegex = new RegExp(
+      ">(arn:aws:iam::\\d+:saml-provider/[a-zA-Z0-9-_@=+.]+),(arn:aws:iam::(\\d+):role/([a-zA-Z0-9-_@=+.]+))<",
+      "gi"
+    );
+    ///>(arn:aws:iam::\d+:saml-provider\/\S+),(arn:aws:iam::(\d+):role\/(\w+))</gi
+    let matches = samlResponse.matchAll(capturingRegex);
 
-    function activateTab(evt, id) {
-      // Declare all variables
-      var i, tabcontent, tablinks;
+    let awsAccounts = {};
+    for (const match of matches) {
+      let awsAccount = {};
+      awsAccount.providerArn = match[1];
+      awsAccount.roleArn = match[2];
 
-      // Get all elements with class="tabcontent" and hide them
-      tabcontent = document.getElementsByClassName("tabcontent");
-      for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
-      }
+      awsAccount.roleName = match[4];
 
-      // Get all elements with class="tablinks" and remove the class "active"
-      tablinks = document.getElementsByClassName("tablinks");
-      for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-      }
-
-      // Show the current tab, and add an "active" class to the button that opened the tab
-      elem = document.getElementById(id);
-      if (elem) {
-        elem.style.display = "block";
-      }
-      if (evt) {
-        evt.currentTarget.className += " active";
+      if (awsAccounts[match[3]] == undefined) {
+        awsAccounts[match[3]] = [awsAccount];
+      } else {
+        awsAccounts[match[3]].push(awsAccount);
       }
     }
-  </script>
 
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    return awsAccounts;
+  }
 
-    <div id="root">
-      <header>
-        <div class="banner">
-          <img
-            src="https://www2.gov.bc.ca/assets/download/6124280C12B44DA492667E23E8BC38BF"
-            alt="Branding logo"
-          />
-          <h1>BC Gov AWS Login</h1>
-        </div>
-      </header>
+  function getSAMLExpiration(samlResponse) {
+    let parser = new DOMParser();
+    let xmlDoc = parser.parseFromString(samlResponse, "text/xml");
 
-      <div class="tab">
-        <button
-          id="accounts-btn"
-          class="tablinks"
-          onclick="activateTab(event, 'content')"
-        >
-          Accounts
-        </button>
+    const expStr = xmlDoc
+      .getElementsByTagName("saml:Conditions")[0]
+      .getAttribute("NotOnOrAfter");
+    const session_exp = Date.parse(expStr);
+    return session_exp;
+  }
 
-        <button class="tablinks" onclick="activateTab(event, 'services')">
-          Supported Services
-        </button>
+  function getSAMLIssuer(samlResponse) {
+    let parser = new DOMParser();
+    let xmlDoc = parser.parseFromString(samlResponse, "text/xml");
 
-        <button
-          class="tablinks"
-          onclick="activateTab(event, 'platform-dashboard')"
-        >
-          Platform Health Dashboard
-        </button>
+    const issuer = xmlDoc.getElementsByTagName("saml:Issuer")[0].innerHTML;
+    return issuer;
+  }
 
-        <button
-          class="tablinks"
-          onclick="activateTab(event, 'external-dashboard')"
-        >
-          External Services Health Dashboard
-        </button>
+  function activateTab(evt, id) {
+    // Declare all variables
+    var i, tabcontent, tablinks;
 
-        <div id="logout"></div>
+    // Get all elements with class="tabcontent" and hide them
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].style.display = "none";
+    }
+
+    // Get all elements with class="tablinks" and remove the class "active"
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    // Show the current tab, and add an "active" class to the button that opened the tab
+    elem = document.getElementById(id);
+    if (elem) {
+      elem.style.display = "block";
+    }
+    if (evt) {
+      evt.currentTarget.className += " active";
+    }
+  }
+</script>
+
+<body>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
+
+  <div id="root">
+    <header>
+      <div class="banner">
+        <img src="https://www2.gov.bc.ca/assets/download/6124280C12B44DA492667E23E8BC38BF" alt="Branding logo" />
+        <h1>BC Gov AWS Login</h1>
       </div>
+    </header>
 
-      <div id="content" class="tabcontent">
-        <div id="sessiontimer"></div>
+    <div class="tab">
+      <button id="accounts-btn" class="tablinks" onclick="activateTab(event, 'content')">
+        Accounts
+      </button>
 
-        <div id="awsaccounts"></div>
-      </div>
+      <button class="tablinks" onclick="activateTab(event, 'services')">
+        Supported Services
+      </button>
 
-      <div id="services" class="tabcontent">
-        <iframe
-          class="airtable-embed"
-          src="https://airtable.com/embed/shrfZS294sP5GcbKr?backgroundColor=yellow&viewControls=on"
-          frameborder="0"
-          onmousewheel=""
-          width="100%"
-          height="900px"
-        ></iframe>
-      </div>
+      <button class="tablinks" onclick="activateTab(event, 'platform-dashboard')">
+        Platform Health Dashboard
+      </button>
 
-      <div id="platform-dashboard" class="tabcontent">
-        <iframe
-          src="https://stats.uptimerobot.com/JKy3os8NmR"
-          frameborder="0"
-          onmousewheel=""
-          width="100%"
-          height="900px"
-        ></iframe>
-      </div>
+      <button class="tablinks" onclick="activateTab(event, 'external-dashboard')">
+        External Services Health Dashboard
+      </button>
 
-      <div id="external-dashboard" class="tabcontent">
+      <div id="logout"></div>
+    </div>
+
+    <div id="content" class="tabcontent">
+      <div id="sessiontimer"></div>
+
+      <div id="awsaccounts"></div>
+    </div>
+
+    <div id="services" class="tabcontent">
+      <p><b><span style='font-size:16.0pt;font-family:"BC Sans"'>FAQ
+            Amazon Web Services (AWS)<o:p></o:p></span></b></p>
+
+      <p><b><span style='font-size:16.0pt;font-family:"BC Sans"'>
+            <o:p>&nbsp;</o:p>
+          </span></b></p>
+
+      <p style='margin-top:0cm;margin-right:0cm;margin-bottom:
+6.0pt;margin-left:17.85pt;text-indent:-17.85pt;mso-list:l0 level1 lfo1'>
+        <![if !supportLists]><b><span style='font-family:"BC Sans"'><span style='mso-list:Ignore'>1.<span
+                style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+              </span></span></span></b>
+        <![endif]><b><span style='font-family:"BC Sans"'>What services
+            are available to product teams in the B.C. government’s landing
+            zone in AWS?<o:p></o:p></span></b>
+      </p>
+
+      <p style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:17.85pt'><span style='font-family:"BC Sans"'>More than 200 services
+          are available to B.C. product teams through the Government of
+          Canada’s Cloud
+          Framework Agreements. <o:p></o:p></span></p>
+
+      <p style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:17.85pt'><span style='font-family:"BC Sans"'>You can find the most
+          up-to-date list of services available on the </span><a
+          href="https://gc-cloud-services.canada.ca/s/gc-cloud-fa?language=en_US"><span
+            style='font-family:"BC Sans"'>Cloud Framework Agreements</span></a><span class=MsoHyperlink><span
+            style='font-family:"BC Sans"'> </span></span><span style='font-family:"BC Sans"'>webpage. This list is
+          continually
+          growing. <o:p></o:p></span></p>
+
+      <p style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:17.85pt'><b><span style='font-family:"BC Sans"'>NOTE: To access a
+            service, please visit the B.C. government’s landing zone in AWS.</span></b><span
+          style='font-family:"BC Sans"'> Do <b>NOT</b> purchase a service by
+          clicking Add
+          to Cart on the Government of Canada’s webpage.<o:p></o:p></span></p>
+
+      <p><span style='font-family:"BC Sans"'>
+          <o:p>&nbsp;</o:p>
+        </span></p>
+
+      <p style='margin-top:0cm;margin-right:0cm;margin-bottom:
+6.0pt;margin-left:17.85pt;text-indent:-17.85pt;mso-list:l0 level1 lfo1'>
+        <![if !supportLists]><span class=ui-provider><b><span style='font-family:"BC Sans";mso-fareast-font-family:
+"BC Sans";mso-bidi-font-family:"BC Sans"'><span style='mso-list:Ignore'>2.<span
+                  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+                </span></span></span></b></span>
+        <![endif]><span class=ui-provider><b><span style='font-family:"BC Sans"'>Do all
+              AWS </span></b></span><b><span style='font-family:"BC Sans"'>Services<span class=ui-provider>
+              work in the B.C.
+              government’s landing zone?<o:p></o:p></span></span></b>
+      </p>
+
+      <p style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:17.85pt'><span class=ui-provider><span style='font-family:"BC Sans"'>No,
+            some AWS </span></span><span style='font-family:"BC Sans"'>Services<span class=ui-provider> that have been
+            assessed by the Government of
+            Canada may <u>not</u>
+            work in the B.C. government’s landing zone. This is due to the
+            security controls
+            built into our secure hosting environment for apps in AWS.<span style='mso-spacerun:yes'> </span>
+            <o:p></o:p>
+          </span></span></p>
+
+      <p style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:17.85pt'><span class=ui-provider><span style='font-family:"BC Sans"'>Your
+            team will need to conduct a functionality test to ensure a
+            service works with
+            your app hosted in the B.C. government’s landing zone.<o:p></o:p></span></span></p>
+
+      <p><span class=ui-provider><span style='font-family:"BC Sans"'>
+            <o:p>&nbsp;</o:p>
+          </span></span></p>
+
+      <p style='margin-top:0cm;margin-right:0cm;margin-bottom:
+6.0pt;margin-left:17.85pt;text-indent:-17.85pt;mso-list:l0 level1 lfo1'>
+        <![if !supportLists]><b><span style='font-family:"BC Sans"'><span style='mso-list:Ignore'>3.<span
+                style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+              </span></span></span></b>
+        <![endif]><span class=ui-provider><b><span style='font-family:"BC Sans"'>Are</span></b></span><b><span style='font-family:
+"BC Sans"'> the <span class=ui-provider>services</span> available through the
+            Government
+            of Canada’s Cloud Framework Agreements secure?<o:p></o:p></span></b>
+      </p>
+
+      <p style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:17.85pt'><span style='font-family:"BC Sans"'>Yes. The Government of
+          Canada has completed security assessments based on their own
+          unique requirements
+          for security, compliance, reliability and cost savings. <span style='mso-spacerun:yes'> </span>You can read
+          more at </span><a
+          href="https://www.canada.ca/en/government/system/digital-government/digital-government-innovations/cloud-services/cloud-security-risk-management-approach-procedures.html"><span
+            style='font-family:"BC Sans"'>Government of Canada Cloud
+            Security Risk
+            Management Approach and Procedures</span></a><span style='font-family:"BC Sans"'>.<o:p></o:p></span></p>
+
+      <p style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:17.85pt'><span style='font-family:"BC Sans"'>The Cloud Pathfinder
+          Team within the Office of the Chief Information Officer, in
+          consultation with
+          Information Security Branches across government, has determined
+          these federal
+          security assessments are sufficient to meet the province’s own
+          corporate
+          security standard. <o:p></o:p></span></p>
+
+      <p style='margin-left:17.85pt'><span style='font-family:"BC Sans"'>
+          <o:p>&nbsp;</o:p>
+        </span></p>
+
+      <p style='margin-top:0cm;margin-right:0cm;margin-bottom:
+6.0pt;margin-left:17.85pt;text-indent:-17.85pt;mso-list:l0 level1 lfo1'>
+        <![if !supportLists]><span class=ui-provider><b><span style='font-family:"BC Sans";mso-fareast-font-family:
+"BC Sans";mso-bidi-font-family:"BC Sans"'><span style='mso-list:Ignore'>4.<span
+                  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+                </span></span></span></b></span>
+        <![endif]><span class=ui-provider><b><span style='font-family:"BC Sans"'>Do I
+              still </span></b></span><b><span style='font-family:"BC Sans"'>need<span class=ui-provider> to
+              have a completed Security
+              Threat Risk Assessment (STRA) and Privacy Impact Assessment
+              (PIA) for a service
+              that has already been assessed by the Government of Canada?<o:p></o:p></span></span></b>
+      </p>
+
+      <p style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:17.85pt'><span class=ui-provider><span style='font-family:"BC Sans"'>Yes,
+            you are still required to have a completed STRA and PIA to use
+            an AWS service
+            within your app. However, your ministry’s </span></span><span style='font-family:
+"BC Sans"'>Information<span class=ui-provider> Security Analyst can refer to
+            the Government of Canada’s previously completed </span>assessment<span class=ui-provider>. <o:p></o:p>
+            </span></span></p>
+
+      <p style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:17.85pt'><span style='font-family:"BC Sans"'>See the </span><a
+          href="https://www.canada.ca/en/government/system/digital-government/digital-government-innovations/cloud-services/cloud-security-risk-management-approach-procedures.html"><span
+            style='font-family:"BC Sans"'>Government of Canada Cloud
+            Security Risk
+            Management Approach and Procedures</span></a><span style='font-family:"BC Sans"'>.<span class=ui-provider>
+            <o:p></o:p>
+          </span></span></p>
+
+      <p><span class=ui-provider><span style='font-family:"BC Sans"'>
+            <o:p>&nbsp;</o:p>
+          </span></span></p>
+
+      <p style='margin-top:0cm;margin-right:0cm;margin-bottom:
+6.0pt;margin-left:17.85pt;text-indent:-17.85pt;mso-list:l0 level1 lfo1'>
+        <![if !supportLists]><span class=ui-provider><b><span style='font-family:"BC Sans";mso-fareast-font-family:
+"BC Sans";mso-bidi-font-family:"BC Sans"'><span style='mso-list:Ignore'>5.<span
+                  style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;
+                </span></span></span></b></span>
+        <![endif]><span class=ui-provider><b><span style='font-family:"BC Sans"'>Can I use
+              an AWS
+              Service that has <u>not</u> been assessed by the Government of
+              Canada?<o:p></o:p></span></b></span>
+      </p>
+
+      <p style='margin-top:0cm;margin-right:0cm;margin-bottom:6.0pt;
+margin-left:17.85pt'><span class=ui-provider><span style='font-family:"BC Sans"'>Yes,
+            you can use an AWS service in your app even if it has not been
+            assessed by the Government
+            of Canada. In this case, your STRA and PIA will need to be more
+            detailed. <o:p></o:p></span></span></p>
+
+      <p><span style='font-family:"BC Sans"'>
+          <o:p>&nbsp;</o:p>
+        </span></p>
+
+      <p><b><span style='font-size:16.0pt;font-family:"BC Sans"'>Other
+            questions?<o:p></o:p></span></b></p>
+
+      <p><span style='font-family:"BC Sans"'>Please contact
+          <a href="mailto:Cloud.Pathfinder@gov.bc.ca">Cloud.Pathfinder@gov.bc.ca</a></span></p>
+
+      <p><span style='font-family:"BC Sans"'>
+          <o:p>&nbsp;</o:p>
+        </span></p>
+    </div>
+
+    <div id="platform-dashboard" class="tabcontent">
+      <iframe src="https://stats.uptimerobot.com/JKy3os8NmR" frameborder="0" onmousewheel width="100%"
+        height="900px"></iframe>
+    </div>
+
+    <div id="external-dashboard" class="tabcontent">
+      <ul>
+        <li>
+          <a href="https://status.aws.amazon.com" target="_blank">AWS Status
+            Page (please connect to an aws account first)</a>
+        </li>
+        <li>
+          <a href="https://status.hashicorp.com" target="_blank">Terraform
+            Status Page</a>
+        </li>
+        <li>
+          <a href="https://www.githubstatus.com" target="_blank">GitHub Status
+            Page</a>
+        </li>
+      </ul>
+    </div>
+
+    <input type="hidden" name="SAMLResponse" value="##SAMLRESPONSE##" />
+
+    <footer class="footer">
+      <div class="container">
         <ul>
-          <li>
-            <a href="https://status.aws.amazon.com" target="_blank"
-              >AWS Status Page (please connect to an aws account first)</a
-            >
-          </li>
-          <li>
-            <a href="https://status.hashicorp.com" target="_blank"
-              >Terraform Status Page</a
-            >
-          </li>
-          <li>
-            <a href="https://www.githubstatus.com" target="_blank"
-              >GitHub Status Page</a
-            >
-          </li>
+          <li><a href=".">Home</a></li>
+          <li><a href=".">Disclaimer</a></li>
+          <li><a href=".">Privacy</a></li>
+          <li><a href=".">Accessibility</a></li>
+          <li><a href=".">Copyright</a></li>
+          <li><a href=".">Contact Us</a></li>
         </ul>
       </div>
+    </footer>
+  </div>
+</body>
 
-      <input type="hidden" name="SAMLResponse" value="##SAMLRESPONSE##" />
-
-      <footer class="footer">
-        <div class="container">
-          <ul>
-            <li><a href=".">Home</a></li>
-            <li><a href=".">Disclaimer</a></li>
-            <li><a href=".">Privacy</a></li>
-            <li><a href=".">Accessibility</a></li>
-            <li><a href=".">Copyright</a></li>
-            <li><a href=".">Contact Us</a></li>
-          </ul>
-        </div>
-      </footer>
-    </div>
-  </body>
 </html>
